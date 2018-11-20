@@ -6,8 +6,7 @@ const mb = menubar({
   index: path.join('file://', __dirname, 'index.html')
 });
 
-const TOKEN =
-  '0c760a8ac0e593beb5cdd8967394a35459aa5793b3c31374989f9a9e68101e7e';
+const TOKEN = '...';
 const SITE_ID = 'a73a67dc-83ab-41a7-ad25-9bd46d809a19';
 
 const ICONS = {
