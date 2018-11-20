@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <title>Example App</title>
+  </head>
+  <body>
+    <h1>Deploys</h1>
+    <ul id="deploys"></ul>
+    <script>
+      const { ipcRenderer } = require('electron');
+      const $list = document.getElementById('deploys');
+      const renderDeploys = deploys => {
+        $list.innerHTML = deploys
+          .slice(0, 10)
+          .map(
+            ({ state, branch, deploy_time }) =>
+              `<li>${state} | ${branch} | ${deploy_time}</li>`
+          )
+          .join('');
+      };
+
+      ipcRenderer.on('updateDeploys', (event, deploys) => {
+        renderDeploys(deploys);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "netlify-menubar-status",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "electron index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stefanjudis/netlify-menubar-status.git"
+  },
+  "keywords": [],
+  "author": "stefan judis <stefanjudis@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stefanjudis/netlify-menubar-status/issues"
+  },
+  "homepage": "https://github.com/stefanjudis/netlify-menubar-status#readme",
+  "dependencies": {
+    "cross-fetch": "^2.2.3",
+    "electron": "^3.0.10",
+    "menubar": "^5.2.3",
+    "node-notifier": "^5.3.0"
+  }
+}
