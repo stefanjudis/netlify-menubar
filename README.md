@@ -1,0 +1,1 @@
+# netlify-menubar-status
