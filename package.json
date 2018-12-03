@@ -1,26 +1,32 @@
 {
-  "name": "netlify-menubar-status",
+  "name": "netlify-menubar",
   "version": "1.0.0",
-  "description": "",
+  "description": "A menubar app to keep track of Netlify builds",
+  "author": "stefan judis <stefanjudis@gmail.com>",
   "main": "index.js",
   "scripts": {
-    "dev": "electron index.js"
+    "dev": "electron index.js",
+    "postinstall": "electron-builder install-app-deps",
+    "pack": "electron-builder --dir -m",
+    "dist": "electron-builder -m"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stefanjudis/netlify-menubar-status.git"
   },
   "keywords": [],
-  "author": "stefan judis <stefanjudis@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/stefanjudis/netlify-menubar-status/issues"
   },
   "homepage": "https://github.com/stefanjudis/netlify-menubar-status#readme",
   "dependencies": {
-    "cross-fetch": "^2.2.3",
-    "electron": "^3.0.10",
-    "menubar": "^5.2.3",
-    "node-notifier": "^5.3.0"
+    "date-fns": "^1.29.0",
+    "electron-settings": "^3.2.0",
+    "node-fetch": "^2.3.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^20.38.2",
+    "electron": "^3.0.10"
   }
 }

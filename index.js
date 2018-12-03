@@ -1,70 +1,102 @@
-const menubar = require('menubar');
 const path = require('path');
-const fetch = require('cross-fetch');
-const notifier = require('node-notifier');
-const mb = menubar({
-  index: path.join('file://', __dirname, 'index.html')
-});
+const settings = require('electron-settings');
+const { app, Notification } = require('electron');
+const { getDeploys, getSites, triggerDeploy } = require('./lib/netlify');
+const { editAccessToken } = require('./lib/ui');
+const { Tray } = require('./lib/tray');
 
-const TOKEN = '...';
-const SITE_ID = 'a73a67dc-83ab-41a7-ad25-9bd46d809a19';
+let tray = null;
+let runningTimer = null;
+let state = null;
 
-const ICONS = {
-  building: path.join(__dirname, 'media', 'building.png'),
-  enqueued: path.join(__dirname, 'media', 'building.png'),
-  ready: path.join(__dirname, 'media', 'ready.png')
-};
-
-let lastDeployStatus;
-let currentDeploys = [];
-
-const getDeploys = async () => {
-  return await (await fetch(
-    `https://api.netlify.com/api/v1/sites/${SITE_ID}/deploys`,
-    {
-      headers: {
-        authorization: `Bearer ${TOKEN}`
-      }
-    }
-  )).json();
-};
-
-const updateTray = (tray, { state: status }) => {
-  console.log('setting tray image', status, ICONS[status]);
-  tray.setImage(ICONS[status]);
-};
-
-const updateOverview = (window, deploys) => {
-  window.webContents.send('updateDeploys', deploys);
-};
-
-const notify = ({ state: status }) => {
-  if (status !== lastDeployStatus) {
-    notifier.notify({
-      title: 'New build status',
-      message: `Status changed to ${status}`
-    });
-
-    lastDeployStatus = status;
+const setState = (key, value, options = { save: true }) => {
+  if (options.save) {
+    settings.set(key, value);
   }
+  state[key] = value;
+  update(state);
 };
 
-mb.on('ready', async () => {
-  const update = async () => {
-    const deploys = await getDeploys();
-    const lastDeploy = deploys[0];
-    console.log(lastDeploy);
-    updateTray(mb.tray, lastDeploy);
-    notify(lastDeploy);
-
-    currentDeploys = deploys;
+app.on('ready', async () => {
+  state = {
+    ...settings.getAll(),
+    deploys: [],
+    sites: [],
+    menuIsOpen: false,
+    isOnline: true,
+    pollInterval: 10000
   };
 
-  setInterval(async _ => {
-    await update();
-  }, 5000);
-
-  mb.on('after-show', _ => {
-    mb.window.webContents.send('updateDeploys', currentDeploys);
+  tray = new Tray({
+    editAccessToken: async _ =>
+      setState('accessToken', await editAccessToken(state.accessToken)),
+    setState,
+    triggerDeploy: async _ => {
+      // these can not be moved out because they
+      // always have to read the latest state
+      const { accessToken, currentSiteId } = state;
+      await triggerDeploy({
+        siteId: currentSiteId,
+        accessToken: accessToken
+      });
+      update(state);
+    },
+    update
   });
+  tray.setToolTip('Netlify');
+
+  if (state.accessToken) {
+    update(state);
+  } else {
+    setState('accessToken', await editAccessToken());
+  }
 });
+
+const update = async () => {
+  console.log('Updating UI...');
+  const {
+    accessToken,
+    currentSiteId,
+    menuIsOpen,
+    pollInterval,
+    showNotifications,
+    deployState: prevDeployState
+  } = state;
+
+  let sites, deploys;
+
+  try {
+    [sites, deploys] = await Promise.all([
+      getSites({ accessToken }),
+      // for the very first run there is
+      // no currentSiteId
+      currentSiteId
+        ? getDeploys({
+            siteId: currentSiteId,
+            accessToken
+          })
+        : []
+    ]);
+    state.isOnline = true;
+  } catch (e) {
+    console.log(e);
+    state.isOnline = false;
+  }
+
+  const deployState = deploys[0] ? deploys[0].state : '';
+  if (showNotifications && prevDeployState && deployState !== prevDeployState) {
+    new Notification({
+      title: 'New deploy status',
+      body: `Last deploy in the queue switched to ${deployState}`
+    }).show();
+  }
+
+  state = { ...state, sites, deploys, deployState };
+
+  if (!menuIsOpen) tray.render(state);
+  if (runningTimer) clearTimeout(runningTimer);
+
+  runningTimer = setTimeout(() => {
+    update(state);
+  }, pollInterval);
+};

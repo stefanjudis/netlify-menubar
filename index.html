@@ -1,25 +1,120 @@
 <html>
   <head>
-    <title>Example App</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      :root {
+        background-color: rgba(8, 0, 103, 1);
+        background-image: linear-gradient(160deg, #000758, #109b9b 160%);
+        font-family: sans-serif;
+        font-size: 100%;
+        text-align: center;
+        color: #fff;
+        padding: 2em;
+      }
+
+      h1 {
+        font-size: 1.375em;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+
+      input {
+        display: block;
+        width: 100%;
+        margin: 0.5em;
+        padding: 0.5em;
+      }
+
+      p {
+        padding: 0.5em 2em;
+        font-size: 0.875em;
+      }
+
+      button {
+        display: inline-block;
+
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 500;
+        line-height: 1.618em;
+        padding: 0.382em 1em;
+        text-align: center;
+        text-decoration: none;
+        border: 0;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px 0 rgba(14, 30, 37, 0.12);
+        color: #fff;
+        margin: 0.25em 0.5em;
+      }
+
+      .save {
+        background: #00b09f;
+      }
+
+      .cancel {
+        background: #fff;
+        color: #444;
+      }
+    </style>
   </head>
   <body>
-    <h1>Deploys</h1>
-    <ul id="deploys"></ul>
+    <h1>Authorize Netlify Menubar</h1>
+    <form>
+      <label>
+        Personal access token <input id="accessToken" type="text" required />
+      </label>
+      <p>
+        You can create a personal access token inside of your Netlify account
+        under "Account Settings > Personal Access Token".
+      </p>
+      <div class="btnContainer">
+        <button class="save">Save</button>
+        <button id="cancel" type="button" class="cancel">Cancel</button>
+      </div>
+    </form>
     <script>
-      const { ipcRenderer } = require('electron');
-      const $list = document.getElementById('deploys');
-      const renderDeploys = deploys => {
-        $list.innerHTML = deploys
-          .slice(0, 10)
-          .map(
-            ({ state, branch, deploy_time }) =>
-              `<li>${state} | ${branch} | ${deploy_time}</li>`
-          )
-          .join('');
-      };
+      const { ipcRenderer, remote, clipboard } = require('electron');
 
-      ipcRenderer.on('updateDeploys', (event, deploys) => {
-        renderDeploys(deploys);
+      const $form = document.querySelector('form');
+      const $token = document.getElementById('accessToken');
+      const $cancel = document.getElementById('cancel');
+
+      const accessToken = remote.getCurrentWindow().accessToken;
+      if (accessToken) {
+        $token.value = accessToken;
+      }
+
+      $form.addEventListener('submit', event => {
+        ipcRenderer.send('TOKEN_SAVED', $form.accessToken.value);
+        event.preventDefault();
+      });
+
+      $cancel.addEventListener('click', _ => {
+        ipcRenderer.send('CLOSE_WINDOW');
+      });
+
+      let cmdPressed = false;
+      window.addEventListener('keyup', event => {
+        if (event.key === 'Meta') {
+          cmdPressed = false;
+        }
+      });
+      window.addEventListener('keydown', event => {
+        if (event.key === 'Meta') {
+          cmdPressed = true;
+        }
+
+        if (cmdPressed && event.key === 'v') {
+          $token.value = clipboard.readText();
+        }
       });
     </script>
   </body>
