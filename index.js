@@ -9,12 +9,15 @@ let tray = null;
 let runningTimer = null;
 let state = null;
 
-const setState = (key, value, options = { save: true }) => {
+const setState = (key, value, options = { save: true, forceUpdate: false }) => {
   if (options.save) {
     settings.set(key, value);
   }
   state[key] = value;
-  update(state);
+
+  if (!state.menuIsOpen || options.forceUpdate) {
+    update(state);
+  }
 };
 
 app.on('ready', async () => {
@@ -66,7 +69,8 @@ const update = async () => {
     deployState: prevDeployState
   } = state;
 
-  let sites, deploys;
+  let sites = [];
+  let deploys = [];
 
   try {
     let data = await getNetlifyData({ accessToken, siteId: currentSiteId });
@@ -98,9 +102,9 @@ const update = async () => {
 
   state = { ...state, sites, deploys, deployState };
 
-  if (!menuIsOpen) tray.render(state);
-  if (runningTimer) clearTimeout(runningTimer);
+  tray.render(state);
 
+  if (runningTimer) clearTimeout(runningTimer);
   runningTimer = setTimeout(() => {
     update(state);
   }, pollInterval);
