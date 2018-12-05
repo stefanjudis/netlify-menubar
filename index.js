@@ -1,7 +1,7 @@
 const path = require('path');
 const settings = require('electron-settings');
 const { app, Notification } = require('electron');
-const { getDeploys, getSites, triggerDeploy } = require('./lib/netlify');
+const { getNetlifyData, triggerDeploy } = require('./lib/netlify');
 const { editAccessToken } = require('./lib/ui');
 const { Tray } = require('./lib/tray');
 
@@ -29,7 +29,10 @@ app.on('ready', async () => {
 
   tray = new Tray({
     editAccessToken: async _ =>
-      setState('accessToken', await editAccessToken(state.accessToken)),
+      setState(
+        'accessToken',
+        await editAccessToken({ accessToken: state.accessToken })
+      ),
     setState,
     triggerDeploy: async _ => {
       // these can not be moved out because they
@@ -66,20 +69,22 @@ const update = async () => {
   let sites, deploys;
 
   try {
-    [sites, deploys] = await Promise.all([
-      getSites({ accessToken }),
-      // for the very first run there is
-      // no currentSiteId
-      currentSiteId
-        ? getDeploys({
-            siteId: currentSiteId,
-            accessToken
-          })
-        : []
-    ]);
+    let data = await getNetlifyData({ accessToken, siteId: currentSiteId });
+    sites = data.sites;
+    deploys = data.deploys;
     state.isOnline = true;
   } catch (e) {
-    console.log(e);
+    if (e.message === 'NOT_AUTHORIZED') {
+      console.log('"Not authorized" error caught');
+      setState(
+        'accessToken',
+        await editAccessToken({
+          accessToken: state.accessToken,
+          message: e.message
+        })
+      );
+    }
+
     state.isOnline = false;
   }
 
