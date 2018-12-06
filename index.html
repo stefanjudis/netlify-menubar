@@ -137,6 +137,10 @@
         if (event.key === 'Meta') {
           cmdPressed = false;
         }
+
+        if (event.key === 'Escape') {
+          ipcRenderer.send('CLOSE_WINDOW');
+        }
       });
       window.addEventListener('keydown', event => {
         if (event.key === 'Meta') {
