@@ -21,6 +21,9 @@ const setState = (key, value, options = { save: true, forceUpdate: false }) => {
 };
 
 app.on('ready', async () => {
+  // let's not make the app appear in the dock
+  app.dock.hide();
+
   state = {
     ...settings.getAll(),
     deploys: [],
