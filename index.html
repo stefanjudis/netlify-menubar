@@ -132,25 +132,32 @@
         ipcRenderer.send('CLOSE_WINDOW');
       });
 
-      let cmdPressed = false;
       window.addEventListener('keyup', event => {
-        if (event.key === 'Meta') {
-          cmdPressed = false;
-        }
-
         if (event.key === 'Escape') {
           ipcRenderer.send('CLOSE_WINDOW');
         }
       });
-      window.addEventListener('keydown', event => {
-        if (event.key === 'Meta') {
-          cmdPressed = true;
-        }
 
-        if (cmdPressed && event.key === 'v') {
-          $token.value = clipboard.readText();
-        }
-      });
+      // in development these commands are handled by the default menu
+      // this menu isn't present in the packed version
+      // thus copy&paste has to be implemented
+      if (remote.app.isPackaged) {
+        let cmdPressed = false;
+        window.addEventListener('keyup', event => {
+          if (event.key === 'Meta') {
+            cmdPressed = false;
+          }
+        })
+        window.addEventListener('keydown', event => {
+          if (event.key === 'Meta') {
+            cmdPressed = true;
+          }
+
+          if (cmdPressed && event.key === 'v') {
+            $token.value = clipboard.readText();
+          }
+        });
+      }
     </script>
   </body>
 </html>
