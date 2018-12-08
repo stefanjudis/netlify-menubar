@@ -1,4 +1,3 @@
-const path = require('path');
 const settings = require('electron-settings');
 const { app, Notification } = require('electron');
 const { getNetlifyData, triggerDeploy } = require('./lib/netlify');
@@ -34,13 +33,13 @@ app.on('ready', async () => {
   };
 
   tray = new Tray({
-    editAccessToken: async _ =>
+    editAccessToken: async () =>
       setState(
         'accessToken',
         await editAccessToken({ accessToken: state.accessToken })
       ),
     setState,
-    triggerDeploy: async _ => {
+    triggerDeploy: async () => {
       // these can not be moved out because they
       // always have to read the latest state
       const { accessToken, currentSiteId } = state;
@@ -62,11 +61,11 @@ app.on('ready', async () => {
 });
 
 const update = async () => {
+  // eslint-disable-next-line no-console
   console.log('Updating UI...');
   const {
     accessToken,
     currentSiteId,
-    menuIsOpen,
     pollInterval,
     showNotifications,
     deployState: prevDeployState
@@ -82,6 +81,7 @@ const update = async () => {
     state.isOnline = true;
   } catch (e) {
     if (e.message === 'NOT_AUTHORIZED') {
+      // eslint-disable-next-line no-console
       console.log('"Not authorized" error caught');
       setState(
         'accessToken',
