@@ -170,9 +170,9 @@ export default class UI {
         click: () => {
           this.saveSetting('launchAtStart', !launchAtStart);
           if (!launchAtStart) {
-            this.autoLauncher.disable();
-          } else {
             this.autoLauncher.enable();
+          } else {
+            this.autoLauncher.disable();
           }
         },
         label: 'Launch at start',
