@@ -4,7 +4,7 @@ import MenuUI from './menu-ui';
 import Netlify from './netlify';
 
 const OAUTH_CLIENT_ID =
-  '8862404c99616312d5b37780f7e303d94d70c141493a9788fec7c68483792fa7';
+  '95d3a5f15e46699275056966ec5467073e27cfe13ab1dd29deb5825a483f3d44';
 
 /**
  *
