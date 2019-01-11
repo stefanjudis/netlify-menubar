@@ -9,7 +9,8 @@
     "postinstall": "electron-builder install-app-deps",
     "test": "tslint src/*",
     "pack": "electron-builder --dir -m",
-    "dist": "electron-builder -m"
+    "dist": "electron-builder -m",
+    "release": "electron-builder -p onTagOrDraft"
   },
   "husky": {
     "hooks": {

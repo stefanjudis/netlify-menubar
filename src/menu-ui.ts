@@ -36,7 +36,7 @@ interface AppNetlifyData {
 
 const DEFAULT_SETTINGS: AppSettings = {
   currentSiteId: null,
-  pollInterval: 3000,
+  pollInterval: 10000,
   showNotifications: false
 };
 
