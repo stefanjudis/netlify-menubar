@@ -24,8 +24,6 @@ const getNetlifyClient = async (accessToken: string): Promise<Netlify> => {
  * @returns {Promise<void>}
  */
 const onAppReady = async (): Promise<void> => {
-  app.dock.hide();
-
   const apiClient = await getNetlifyClient(settings.get(
     'accessToken'
   ) as string);
@@ -35,6 +33,10 @@ const onAppReady = async (): Promise<void> => {
     apiClient,
     electronSettings: settings
   });
+
+  // only hide dock icon when everything's running
+  // otherwise the auth prompt disappears in MacOS
+  app.dock.hide();
 };
 
 export const start = () => {
