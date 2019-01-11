@@ -17,6 +17,7 @@ interface JsonArray extends Array<JsonValue> {} // tslint:disable-line no-empty-
 type JsonValue = string | number | boolean | null | JsonArray | JsonObject;
 
 interface AppSettings {
+  launchAtStart: boolean;
   pollInterval: number;
   showNotifications: boolean;
   currentSiteId: string | null;
@@ -36,21 +37,24 @@ interface AppNetlifyData {
 
 const DEFAULT_SETTINGS: AppSettings = {
   currentSiteId: null,
+  launchAtStart: false,
   pollInterval: 10000,
   showNotifications: false
 };
 
 export default class UI {
   private apiClient: Netlify;
+  private autoLauncher: { enable: () => void; disable: () => void };
   private state: AppState;
   private tray: Tray;
   private settings: AppSettings;
   private netlifyData: AppNetlifyData;
   private saveSetting: (key: string, value: JsonValue) => void;
 
-  public constructor({ apiClient, electronSettings }) {
+  public constructor({ apiClient, electronSettings, autoLauncher }) {
     this.tray = new Tray(ICONS.loading);
     this.apiClient = apiClient;
+    this.autoLauncher = autoLauncher;
     this.settings = {
       ...DEFAULT_SETTINGS,
       ...electronSettings.getAll()
@@ -151,7 +155,7 @@ export default class UI {
   }
 
   private getSettingsSubmenu(): MenuItemConstructorOptions[] {
-    const { pollInterval, showNotifications } = this.settings;
+    const { pollInterval, showNotifications, launchAtStart } = this.settings;
     const pollDurations = [
       { value: 10000, label: '10sec' },
       { value: 30000, label: '30sec' },
@@ -161,6 +165,19 @@ export default class UI {
     ];
 
     return [
+      {
+        checked: launchAtStart,
+        click: () => {
+          this.saveSetting('launchAtStart', !launchAtStart);
+          if (!launchAtStart) {
+            this.autoLauncher.disable();
+          } else {
+            this.autoLauncher.enable();
+          }
+        },
+        label: 'Launch at start',
+        type: 'checkbox'
+      },
       {
         checked: showNotifications,
         click: () => this.saveSetting('showNotifications', !showNotifications),

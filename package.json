@@ -1,6 +1,6 @@
 {
   "name": "netlify-menubar",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A menubar app to keep track of Netlify builds",
   "author": "stefan judis <stefanjudis@gmail.com>",
   "main": "index.js",
@@ -8,9 +8,9 @@
     "dev": "tsc && electron index.js",
     "postinstall": "electron-builder install-app-deps",
     "test": "tslint src/*",
-    "pack": "electron-builder --dir -m",
-    "dist": "electron-builder -m",
-    "release": "electron-builder -p onTagOrDraft"
+    "pack": "tsc && electron-builder --dir -m",
+    "dist": "tsc && electron-builder -m",
+    "release": "tsc && electron-builder -p onTagOrDraft"
   },
   "husky": {
     "hooks": {
@@ -36,6 +36,7 @@
   },
   "homepage": "https://github.com/stefanjudis/netlify-menubar-status#readme",
   "dependencies": {
+    "auto-launch": "^5.0.5",
     "date-fns": "^1.30.1",
     "electron-settings": "^3.2.0",
     "node-fetch": "^2.3.0"

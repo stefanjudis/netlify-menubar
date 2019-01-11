@@ -1,3 +1,4 @@
+import AutoLaunch from 'auto-launch';
 import { app } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import settings from 'electron-settings';
 import MenuUI from './menu-ui';
@@ -29,8 +30,20 @@ const onAppReady = async (): Promise<void> => {
   ) as string);
   settings.set('accessToken', apiClient.accessToken);
 
+  const autoLauncher = new AutoLaunch({
+    name: 'Netlify Menubar',
+    path: '/Applications/Netlify Menubar.app'
+  });
+
+  if (settings.get('launchAtStart')) {
+    autoLauncher.enable();
+  } else {
+    autoLauncher.disable();
+  }
+
   const ui = new MenuUI({
     apiClient,
+    autoLauncher,
     electronSettings: settings
   });
 
