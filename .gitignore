@@ -60,5 +60,12 @@ typings/
 # next.js build output
 .next
 
-# packed app
+# typescript output
 dist
+
+# packed app
+built
+
+# random stuff
+.DS_STORE
+.vscode

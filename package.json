@@ -5,9 +5,9 @@
   "author": "stefan judis <stefanjudis@gmail.com>",
   "main": "index.js",
   "scripts": {
-    "dev": "electron index.js",
+    "dev": "tsc && electron index.js",
     "postinstall": "electron-builder install-app-deps",
-    "test": "eslint index.js lib/*",
+    "test": "tslint src/*",
     "pack": "electron-builder --dir -m",
     "dist": "electron-builder -m"
   },
@@ -20,6 +20,14 @@
     "type": "git",
     "url": "git+https://github.com/stefanjudis/netlify-menubar-status.git"
   },
+  "build": {
+    "appId": "netlify.menubar.electron.app",
+    "productName": "Netlify Menubar",
+    "copyright": "Copyright © 2019 Stefan Judis",
+    "directories": {
+      "output": "built"
+    }
+  },
   "keywords": [],
   "license": "MIT",
   "bugs": {
@@ -27,15 +35,17 @@
   },
   "homepage": "https://github.com/stefanjudis/netlify-menubar-status#readme",
   "dependencies": {
-    "date-fns": "^1.29.0",
+    "date-fns": "^1.30.1",
     "electron-settings": "^3.2.0",
     "node-fetch": "^2.3.0"
   },
   "devDependencies": {
-    "electron": "^3.0.10",
+    "@types/electron-settings": "^3.1.1",
+    "@types/node-fetch": "^2.1.4",
     "electron-builder": "^20.38.2",
-    "eslint": "^5.10.0",
-    "eslint-config-prettier": "^3.3.0",
-    "husky": "^1.2.0"
+    "husky": "^1.2.0",
+    "tslint": "^5.12.0",
+    "tslint-config-prettier": "^1.17.0",
+    "typescript": "^3.2.2"
   }
 }
