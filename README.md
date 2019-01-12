@@ -18,6 +18,15 @@ Head over to the [releases section](https://github.com/stefanjudis/netlify-menub
 
 _Install via `brew cask` is in progress._ :)
 
+## Contribute
+
+You can run Netlify menubar right from your machine. There should be no additional setup required.
+
+```
+$ git clone git@github.com:stefanjudis/netlify-menubar.git
+$ npm run dev
+```
+
 ## Contributors
 
 Thanks goes to these wonderful people ([emoji key](https://github.com/all-contributors/all-contributors#emoji-key)):
