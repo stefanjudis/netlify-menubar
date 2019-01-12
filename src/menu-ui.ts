@@ -273,7 +273,7 @@ export default class UI {
         submenu: this.getSettingsSubmenu()
       },
       { type: 'separator' },
-      { role: 'quit' }
+      { label: 'Quit Netlify Menubar', role: 'quit' }
     ]);
 
     menu.on('menu-will-show', () => (this.state.menuIsOpen = true));
