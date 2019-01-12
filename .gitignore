@@ -66,6 +66,9 @@ dist
 # packed app
 built
 
+# local certs
+.certificates.p12
+
 # random stuff
 .DS_STORE
 .vscode
