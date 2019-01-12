@@ -1,6 +1,6 @@
 # Netlify Menubar
 
-[![Build Status](https://travis-ci.org/stefanjudis/netlify-menubar.svg?branch=master)](https://travis-ci.org/stefanjudis/netlify-menubar) [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors)
+[![Build Status](https://travis-ci.org/stefanjudis/netlify-menubar.svg?branch=master)](https://travis-ci.org/stefanjudis/netlify-menubar) [![Recent release](https://img.shields.io/github/release/stefanjudis/netlify-menubar.svg)](https://github.com/stefanjudis/netlify-menubar/releases) [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors)
 
 > See, monitor and controls builds from within your top menubar
 
