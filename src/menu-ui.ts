@@ -248,7 +248,7 @@ export default class UI {
       { type: 'separator' },
       {
         enabled: false,
-        label: currentSite.name
+        label: `${currentSite.url.replace(/https?:\/\//, '')}`
       },
       {
         click: () => shell.openExternal(currentSite.url),
