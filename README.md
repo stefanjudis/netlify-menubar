@@ -12,6 +12,12 @@
 - poll new deploy information
 - get notified when a new deploy is ready
 
+## Installation
+
+Head over to the [releases section](https://github.com/stefanjudis/netlify-menubar/releases) and download the latest `dmg`. The app supports auto-updates so you only have to install it once and then it's rolling.
+
+_Install via `brew cask` is in progress._ :)
+
 ## Contributors
 
 Thanks goes to these wonderful people ([emoji key](https://github.com/all-contributors/all-contributors#emoji-key)):
