@@ -1,6 +1,7 @@
 import AutoLaunch from 'auto-launch';
 import { app } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import settings from 'electron-settings';
+import { autoUpdater } from 'electron-updater';
 import MenuUI from './menu-ui';
 import Netlify from './netlify';
 
@@ -50,6 +51,8 @@ const onAppReady = async (): Promise<void> => {
   // only hide dock icon when everything's running
   // otherwise the auth prompt disappears in MacOS
   app.dock.hide();
+
+  autoUpdater.checkForUpdatesAndNotify();
 };
 
 export const start = () => {

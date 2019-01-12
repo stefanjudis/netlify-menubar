@@ -1,5 +1,6 @@
 import { distanceInWords } from 'date-fns';
 import {
+  app,
   Menu,
   MenuItemConstructorOptions,
   Notification,
@@ -230,6 +231,11 @@ export default class UI {
 
     const currentSite = this.getSite(currentSiteId);
     const menu = Menu.buildFromTemplate([
+      {
+        enabled: false,
+        label: `Netlify Menubar ${app.getVersion()}`
+      },
+      { type: 'separator' },
       {
         enabled: false,
         label: user && user.email
