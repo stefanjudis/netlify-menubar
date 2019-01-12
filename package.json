@@ -10,7 +10,7 @@
     "test": "tslint src/*",
     "pack": "tsc && electron-builder --dir -m",
     "dist": "tsc && electron-builder -m",
-    "release": "tsc && electron-builder -p onTagOrDraft"
+    "release": "tsc && build"
   },
   "husky": {
     "hooks": {
