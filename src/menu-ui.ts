@@ -235,6 +235,10 @@ export default class UI {
         enabled: false,
         label: `Netlify Menubar ${app.getVersion()}`
       },
+      {
+        enabled: false,
+        label: 'Schnitzel'
+      },
       { type: 'separator' },
       {
         enabled: false,
