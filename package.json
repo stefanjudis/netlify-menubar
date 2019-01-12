@@ -10,7 +10,9 @@
     "test": "tslint src/*",
     "pack": "tsc && electron-builder --dir -m",
     "dist": "tsc && electron-builder -m",
-    "release": "tsc && build"
+    "release": "tsc && build",
+    "contributors:add": "all-contributors add",
+    "contributors:generate": "all-contributors generate"
   },
   "husky": {
     "hooks": {
@@ -45,6 +47,7 @@
   "devDependencies": {
     "@types/electron-settings": "^3.1.1",
     "@types/node-fetch": "^2.1.4",
+    "all-contributors-cli": "^5.7.0",
     "electron": "^4.0.1",
     "electron-builder": "^20.38.2",
     "husky": "^1.2.0",
