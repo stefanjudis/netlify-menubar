@@ -1,0 +1,22 @@
+{
+  "projectName": "netlify-menubar",
+  "projectOwner": "stefanjudis",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "contributors": [
+    {
+      "login": "johnnyxbell",
+      "name": "Johnny Bell",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/4260265?v=4",
+      "profile": "http://johnnybell.io",
+      "contributions": [
+        "code"
+      ]
+    }
+  ]
+}
