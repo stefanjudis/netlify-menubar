@@ -136,7 +136,7 @@ export default class UI {
 
   private getSitesSubmenu(sites: NetlifySite[]): MenuItemConstructorOptions[] {
     return sites.map(
-      ({ name, id }): MenuItemConstructorOptions => ({
+      ({ id, url }): MenuItemConstructorOptions => ({
         checked: this.settings.currentSiteId === id,
         click: async () => {
           this.saveSetting('currentSiteId', id);
@@ -148,7 +148,7 @@ export default class UI {
             }
           });
         },
-        label: name,
+        label: `${url.replace(/https?:\/\//, '')}`,
         type: 'radio'
       })
     );
