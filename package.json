@@ -10,7 +10,7 @@
     "test": "tslint src/*",
     "pack": "tsc && electron-builder --dir -m",
     "dist": "tsc && electron-builder -m",
-    "release": "tsc && electron-builder -p onTagOrDraft"
+    "release": "tsc && electron-builder -p"
   },
   "husky": {
     "hooks": {
@@ -26,7 +26,7 @@
     "productName": "Netlify Menubar",
     "copyright": "Copyright © 2019 Stefan Judis",
     "directories": {
-      "output": "built"
+      "output": "release"
     }
   },
   "keywords": [],

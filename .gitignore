@@ -64,7 +64,7 @@ typings/
 dist
 
 # packed app
-built
+release
 
 # local certs
 .certificates.p12
