@@ -216,7 +216,6 @@ export default class UI {
       try {
         await fn();
         this.setNewDeployState();
-        this.render();
         this.tray.setImage(ICONS[this.state.previousDeployState]);
       } catch (e) {
         this.tray.setImage(ICONS.offline);
@@ -224,6 +223,8 @@ export default class UI {
     } else {
       this.tray.setImage(ICONS.offline);
     }
+
+    this.render();
   }
 
   private updateDeploys(): Promise<void> {
