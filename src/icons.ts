@@ -4,11 +4,11 @@ const getIconPath = (fileName: string): string =>
   path.join(__dirname, '..', 'media', fileName);
 
 export default {
-  building: getIconPath('building.png'),
-  enqueued: getIconPath('building.png'),
-  loading: getIconPath('loading.png'),
-  new: getIconPath('building.png'),
-  offline: getIconPath('offline.png'),
-  processing: getIconPath('building.png'),
-  ready: getIconPath('ready.png')
+  building: getIconPath('buildingTemplate.png'),
+  enqueued: getIconPath('buildingTemplate.png'),
+  loading: getIconPath('loadingTemplate.png'),
+  new: getIconPath('buildingTemplate.png'),
+  offline: getIconPath('offlineTemplate.png'),
+  processing: getIconPath('buildingTemplate.png'),
+  ready: getIconPath('readyTemplate.png')
 };
