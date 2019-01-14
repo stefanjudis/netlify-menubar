@@ -2,6 +2,7 @@ import AutoLaunch from 'auto-launch';
 import { app } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import settings from 'electron-settings';
 import { autoUpdater } from 'electron-updater';
+import Connection from './connection';
 import MenuUI from './menu-ui';
 import Netlify from './netlify';
 
@@ -20,12 +21,26 @@ const getNetlifyClient = async (accessToken: string): Promise<Netlify> => {
   return apiClient;
 };
 
+const getOnlineConnection = (): Promise<Connection> => {
+  return new Promise(resolve => {
+    const connection = new Connection();
+
+    connection.on('status-changed', conn => {
+      if (conn.isOnline) {
+        resolve(connection);
+      }
+    });
+  });
+};
+
 /**
  *
  *
  * @returns {Promise<void>}
  */
 const onAppReady = async (): Promise<void> => {
+  const connection = await getOnlineConnection();
+
   const apiClient = await getNetlifyClient(settings.get(
     'accessToken'
   ) as string);
@@ -45,7 +60,7 @@ const onAppReady = async (): Promise<void> => {
   const ui = new MenuUI({
     apiClient,
     autoLauncher,
-    electronSettings: settings
+    connection
   });
 
   // only hide dock icon when everything's running

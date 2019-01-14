@@ -152,6 +152,8 @@ class Netlify {
       throw new Error('NOT_AUTHORIZED');
     }
 
+    // tslint:disable-next-line
+    console.log('NETLIFY CALL DONE:', path, method);
     return response.json();
   }
 }
