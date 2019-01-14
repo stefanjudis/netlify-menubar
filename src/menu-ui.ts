@@ -1,3 +1,4 @@
+import AutoLaunch from 'auto-launch';
 import { distanceInWords } from 'date-fns';
 import {
   app,
@@ -7,6 +8,8 @@ import {
   shell,
   Tray
 } from 'electron'; // tslint:disable-line no-implicit-dependencies
+import settings from 'electron-settings';
+import Connection from './connection';
 import ICONS from './icons';
 import Netlify, { NetlifyDeploy, NetlifySite, NetlifyUser } from './netlify';
 
@@ -25,7 +28,6 @@ interface AppSettings {
 }
 
 interface AppState {
-  currentTimeout: NodeJS.Timer | null;
   menuIsOpen: boolean;
   previousDeployState: string;
 }
@@ -45,25 +47,30 @@ const DEFAULT_SETTINGS: AppSettings = {
 
 export default class UI {
   private apiClient: Netlify;
-  private autoLauncher: { enable: () => void; disable: () => void };
+  private autoLauncher: AutoLaunch;
+  private connection: Connection;
   private state: AppState;
   private tray: Tray;
   private settings: AppSettings;
   private netlifyData: AppNetlifyData;
-  private saveSetting: (key: string, value: JsonValue) => void;
 
-  public constructor({ apiClient, electronSettings, autoLauncher }) {
+  public constructor({
+    apiClient,
+    autoLauncher,
+    connection
+  }: {
+    apiClient: Netlify;
+    autoLauncher: AutoLaunch;
+    connection: Connection;
+  }) {
     this.tray = new Tray(ICONS.loading);
     this.apiClient = apiClient;
     this.autoLauncher = autoLauncher;
+    this.connection = connection;
+
     this.settings = {
       ...DEFAULT_SETTINGS,
-      ...electronSettings.getAll()
-    };
-    this.saveSetting = (key: string, value: JsonValue): void => {
-      electronSettings.set(key, value);
-      this.settings[key] = value;
-      this.render();
+      ...(settings.getAll() as {})
     };
 
     this.netlifyData = {
@@ -72,12 +79,20 @@ export default class UI {
     };
 
     this.state = {
-      currentTimeout: null,
       menuIsOpen: false,
       previousDeployState: ''
     };
 
-    this.setup().then(() => this.render());
+    this.setup().then(() => {
+      const repeat = () => {
+        setTimeout(async () => {
+          await this.updateDeploys();
+          repeat();
+        }, this.settings.pollInterval);
+      };
+
+      repeat();
+    });
   }
 
   private async setup(): Promise<void> {
@@ -141,13 +156,7 @@ export default class UI {
         checked: this.settings.currentSiteId === id,
         click: async () => {
           this.saveSetting('currentSiteId', id);
-          this.fetchData(async () => {
-            if (this.settings.currentSiteId) {
-              this.netlifyData.deploys = await this.apiClient.getSiteDeploys(
-                this.settings.currentSiteId
-              );
-            }
-          });
+          this.updateDeploys();
         },
         label: `${url.replace(/https?:\/\//, '')}`,
         type: 'radio'
@@ -200,23 +209,54 @@ export default class UI {
   }
 
   private async fetchData(fn: () => void): Promise<void> {
-    this.tray.setImage(ICONS.loading);
-    await fn();
+    if (this.connection.isOnline) {
+      this.tray.setImage(ICONS.loading);
 
+      // catch possible network hickups
+      try {
+        await fn();
+        this.setNewDeployState();
+        this.render();
+        this.tray.setImage(ICONS[this.state.previousDeployState]);
+      } catch (e) {
+        this.tray.setImage(ICONS.offline);
+      }
+    } else {
+      this.tray.setImage(ICONS.offline);
+    }
+  }
+
+  private updateDeploys(): Promise<void> {
+    return this.fetchData(async () => {
+      if (this.settings.currentSiteId) {
+        this.netlifyData.deploys = await this.apiClient.getSiteDeploys(
+          this.settings.currentSiteId
+        );
+      }
+    });
+  }
+
+  private setNewDeployState(): void {
     const { deploys } = this.netlifyData;
     const deployState = deploys[0] ? deploys[0].state : '';
-    if (
-      this.settings.showNotifications &&
+
+    const newDeployStateIsAvailable =
       this.state.previousDeployState &&
-      this.state.previousDeployState !== deploys[0].state
-    ) {
+      this.state.previousDeployState !== deployState;
+
+    if (this.settings.showNotifications && newDeployStateIsAvailable) {
       new Notification({
         body: `Last deploy in the queue switched to ${deployState}`,
         title: 'New deploy status'
       }).show();
     }
-    this.state.previousDeployState = deploys[0].state;
-    this.tray.setImage(ICONS[this.netlifyData.deploys[0].state]);
+
+    this.state.previousDeployState = deployState;
+  }
+
+  private saveSetting(key: string, value: JsonValue): void {
+    settings.set(key, value);
+    this.settings[key] = value;
     this.render();
   }
 
@@ -224,6 +264,17 @@ export default class UI {
     if (!this.settings.currentSiteId) {
       console.error('No current site id found'); // tslint:disable-line no-console
       return;
+    }
+
+    if (!this.connection.isOnline) {
+      return this.tray.setContextMenu(
+        Menu.buildFromTemplate([
+          {
+            enabled: false,
+            label: "Looks like you're offline..."
+          }
+        ])
+      );
     }
 
     const { currentSiteId } = this.settings;
@@ -296,16 +347,5 @@ export default class UI {
       console.log('UI: rerending menu');
       this.tray.setContextMenu(menu);
     }
-
-    if (this.state.currentTimeout) {
-      clearTimeout(this.state.currentTimeout);
-    }
-    this.state.currentTimeout = setTimeout(() => {
-      this.fetchData(async () => {
-        this.netlifyData.deploys = await this.apiClient.getSiteDeploys(
-          currentSiteId
-        );
-      });
-    }, this.settings.pollInterval);
   }
 }

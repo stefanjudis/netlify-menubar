@@ -8,6 +8,7 @@ export default {
   enqueued: getIconPath('building.png'),
   loading: getIconPath('loading.png'),
   new: getIconPath('building.png'),
+  offline: getIconPath('offline.png'),
   processing: getIconPath('building.png'),
   ready: getIconPath('ready.png')
 };
