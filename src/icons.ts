@@ -11,5 +11,6 @@ export default {
   new: getIconPath('buildingTemplate.png'),
   offline: getIconPath('offlineTemplate.png'),
   processing: getIconPath('buildingTemplate.png'),
-  ready: getIconPath('readyTemplate.png')
+  ready: getIconPath('readyTemplate.png'),
+  uploaded: getIconPath('buildingTemplate.png')
 };
