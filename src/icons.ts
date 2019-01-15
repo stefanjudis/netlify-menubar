@@ -6,6 +6,7 @@ const getIconPath = (fileName: string): string =>
 export default {
   building: getIconPath('buildingTemplate.png'),
   enqueued: getIconPath('buildingTemplate.png'),
+  error: getIconPath('errorTemplate.png'),
   loading: getIconPath('loadingTemplate.png'),
   new: getIconPath('buildingTemplate.png'),
   offline: getIconPath('offlineTemplate.png'),
