@@ -156,6 +156,7 @@ export default class UI {
         checked: this.settings.currentSiteId === id,
         click: async () => {
           this.saveSetting('currentSiteId', id);
+          this.state.previousDeployState = '';
           this.updateDeploys();
         },
         label: `${url.replace(/https?:\/\//, '')}`,
