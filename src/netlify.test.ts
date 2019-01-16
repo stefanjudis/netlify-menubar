@@ -61,6 +61,14 @@ describe('netlify api client', () => {
     });
   });
 
+  describe(':getCurrentUser', () => {
+    test('calls the right URL', async () => {
+      mFetch.mockReturnValue(getFetchPromise({}));
+      await apiClient.getCurrentUser();
+      expect(mFetch.mock.calls[0][0]).toBe(`${API_URL}/user`);
+    });
+  });
+
   describe(':getSites', () => {
     test('calls the right URL', async () => {
       mFetch.mockReturnValue(getFetchPromise({}));

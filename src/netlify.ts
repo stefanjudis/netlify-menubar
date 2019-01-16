@@ -48,6 +48,7 @@ interface NetlifyAccessToken {
 }
 
 export const API_URL = 'https://api.netlify.com/api/v1';
+export const UI_URL = 'https://api.netlify.com/api/v1';
 
 class Netlify {
   public accessToken: string | null;
@@ -56,12 +57,8 @@ class Netlify {
 
   constructor(accessToken: string) {
     this.accessToken = accessToken;
-    this.API_URL = 'https://api.netlify.com/api/v1';
-    this.UI_URL = 'https://app.netlify.com';
-  }
-
-  public getCurrentUser(): Promise<NetlifyUser> {
-    return this.fetch<NetlifyUser>('/user');
+    this.API_URL = API_URL;
+    this.UI_URL = UI_URL;
   }
 
   public async authorize(clientId: string): Promise<void> {
@@ -104,16 +101,39 @@ class Netlify {
     this.accessToken = await this.getAccessToken(ticket.id);
   }
 
-  public getSites(): Promise<NetlifySite[]> {
-    return this.fetch<NetlifySite[]>('/sites');
-  }
-
   public createSiteBuild(siteId: string): Promise<NetlifyBuild> {
     return this.fetch<NetlifyBuild>(`/sites/${siteId}/builds`, 'POST');
   }
 
+  public getCurrentUser(): Promise<NetlifyUser> {
+    return this.fetch<NetlifyUser>('/user');
+  }
+
+  public getSites(): Promise<NetlifySite[]> {
+    return this.fetch<NetlifySite[]>('/sites');
+  }
+
   public getSiteDeploys(siteId: string): Promise<NetlifyDeploy[]> {
     return this.fetch<NetlifyDeploy[]>(`/sites/${siteId}/deploys`);
+  }
+
+  public async fetch<T>(path: string, method: string = 'GET'): Promise<T> {
+    // tslint:disable-next-line
+    console.log('NETLIFY CALL:', path, method);
+    const response = await fetch(`${this.API_URL}${path}`, {
+      headers: {
+        authorization: `Bearer ${this.accessToken}`
+      },
+      method
+    });
+
+    if (response.status === 401) {
+      throw new Error('NOT_AUTHORIZED');
+    }
+
+    // tslint:disable-next-line
+    console.log('NETLIFY CALL DONE:', path, method);
+    return response.json();
   }
 
   private async getAccessToken(ticketId: string): Promise<string> {
@@ -138,25 +158,6 @@ class Netlify {
       'POST'
     );
     return response.access_token;
-  }
-
-  public async fetch<T>(path: string, method: string = 'GET'): Promise<T> {
-    // tslint:disable-next-line
-    console.log('NETLIFY CALL:', path, method);
-    const response = await fetch(`${this.API_URL}${path}`, {
-      headers: {
-        authorization: `Bearer ${this.accessToken}`
-      },
-      method
-    });
-
-    if (response.status === 401) {
-      throw new Error('NOT_AUTHORIZED');
-    }
-
-    // tslint:disable-next-line
-    console.log('NETLIFY CALL DONE:', path, method);
-    return response.json();
   }
 }
 
