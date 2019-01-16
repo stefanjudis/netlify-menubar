@@ -27,11 +27,11 @@ describe('netlify api client', () => {
   });
 
   describe(':fetch', () => {
-    test('accessToken is stored in api client', async () => {
+    test('stores accessToken in api client', async () => {
       expect(apiClient.accessToken).toBe(apiToken);
     });
 
-    test('authorization header is properly set', async () => {
+    test('sets authorization header properly', async () => {
       mFetch.mockReturnValue(getFetchPromise());
       await apiClient.fetch('/foo');
       expect(mFetch.mock.calls[0][0].endsWith('/foo')).toBeTruthy();
@@ -62,7 +62,7 @@ describe('netlify api client', () => {
   });
 
   describe(':getCurrentUser', () => {
-    test('calls the right URL', async () => {
+    test('calls the correct URL', async () => {
       mFetch.mockReturnValue(getFetchPromise({}));
       await apiClient.getCurrentUser();
       expect(mFetch.mock.calls[0][0]).toBe(`${API_URL}/user`);
@@ -70,7 +70,7 @@ describe('netlify api client', () => {
   });
 
   describe(':getSites', () => {
-    test('calls the right URL', async () => {
+    test('calls the correct URL', async () => {
       mFetch.mockReturnValue(getFetchPromise({}));
       await apiClient.getSites();
       expect(mFetch.mock.calls[0][0]).toBe(`${API_URL}/sites`);
@@ -78,13 +78,31 @@ describe('netlify api client', () => {
   });
 
   describe(':getSiteDeploys', () => {
-    test('calls the right URL', async () => {
+    test('calls the correct URL', async () => {
       const siteId = '123456789';
       mFetch.mockReturnValue(getFetchPromise({}));
       await apiClient.getSiteDeploys(siteId);
       expect(mFetch.mock.calls[0][0]).toBe(
         `${API_URL}/sites/${siteId}/deploys`
       );
+    });
+  });
+
+  describe(':createSiteBuild', () => {
+    test('calls the correct URL with the correct HTTP method', async () => {
+      const siteId = '123456789';
+      mFetch.mockReturnValue(getFetchPromise({}));
+      await apiClient.createSiteBuild(siteId);
+      expect(mFetch.mock.calls[0][0]).toBe(`${API_URL}/sites/${siteId}/builds`);
+      expect(mFetch.mock.calls[0][1].method).toBe('POST');
+    });
+  });
+
+  describe(':authorize', () => {
+    test('calls the API once to check validity of the token', async () => {
+      mFetch.mockReturnValue(getFetchPromise({}));
+      await apiClient.authorize('clientId');
+      expect(mFetch.mock.calls.length).toBe(1);
     });
   });
 });

@@ -61,11 +61,11 @@ class Netlify {
     this.UI_URL = UI_URL;
   }
 
-  public async authorize(clientId: string): Promise<void> {
+  public async authorize(clientId: string): Promise<Netlify> {
     if (this.accessToken) {
       try {
         await this.getCurrentUser();
-        return;
+        return this;
       } catch (e) {
         // fetching the current user failed
         // meaning that the access token is not valid
@@ -99,24 +99,56 @@ class Netlify {
     );
 
     this.accessToken = await this.getAccessToken(ticket.id);
+
+    return this;
   }
 
+  /**
+   * @param {string} siteId
+   * @returns {Promise<NetlifyBuild>}
+   * @memberof Netlify
+   * @tested
+   */
   public createSiteBuild(siteId: string): Promise<NetlifyBuild> {
     return this.fetch<NetlifyBuild>(`/sites/${siteId}/builds`, 'POST');
   }
 
+  /**
+   * @returns {Promise<NetlifyUser>}
+   * @memberof Netlify
+   * @tested
+   */
   public getCurrentUser(): Promise<NetlifyUser> {
     return this.fetch<NetlifyUser>('/user');
   }
 
+  /**
+   * @returns {Promise<NetlifySite[]>}
+   * @memberof Netlify
+   * @tested
+   */
   public getSites(): Promise<NetlifySite[]> {
     return this.fetch<NetlifySite[]>('/sites');
   }
 
+  /**
+   * @param {string} siteId
+   * @returns {Promise<NetlifyDeploy[]>}
+   * @memberof Netlify
+   * @tested
+   */
   public getSiteDeploys(siteId: string): Promise<NetlifyDeploy[]> {
     return this.fetch<NetlifyDeploy[]>(`/sites/${siteId}/deploys`);
   }
 
+  /**
+   * @template T
+   * @param {string} path
+   * @param {string} [method='GET']
+   * @returns {Promise<T>}
+   * @memberof Netlify
+   * @tested
+   */
   public async fetch<T>(path: string, method: string = 'GET'): Promise<T> {
     // tslint:disable-next-line
     console.log('NETLIFY CALL:', path, method);

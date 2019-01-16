@@ -9,16 +9,9 @@ import Netlify from './netlify';
 const OAUTH_CLIENT_ID =
   '95d3a5f15e46699275056966ec5467073e27cfe13ab1dd29deb5825a483f3d44';
 
-/**
- *
- *
- * @param {JsonValue} accessToken
- * @returns {Promise<{ accessToken: JsonValue }>}
- */
 const getNetlifyClient = async (accessToken: string): Promise<Netlify> => {
   const apiClient = new Netlify(accessToken);
-  await apiClient.authorize(OAUTH_CLIENT_ID);
-  return apiClient;
+  return apiClient.authorize(OAUTH_CLIENT_ID);
 };
 
 const getOnlineConnection = (): Promise<Connection> => {
