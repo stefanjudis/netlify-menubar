@@ -47,6 +47,8 @@ interface NetlifyAccessToken {
   user_email: string;
 }
 
+export const API_URL = 'https://api.netlify.com/api/v1';
+
 class Netlify {
   public accessToken: string | null;
   private API_URL: string;
