@@ -138,7 +138,7 @@ class Netlify {
     return response.access_token;
   }
 
-  private async fetch<T>(path: string, method: string = 'GET'): Promise<T> {
+  public async fetch<T>(path: string, method: string = 'GET'): Promise<T> {
     // tslint:disable-next-line
     console.log('NETLIFY CALL:', path, method);
     const response = await fetch(`${this.API_URL}${path}`, {

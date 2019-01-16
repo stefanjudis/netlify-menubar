@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsc && electron index.js",
     "postinstall": "electron-builder install-app-deps",
-    "test": "tslint src/*",
+    "test": "tslint src/* && jest",
     "pack": "tsc && electron-builder --dir -m",
     "dist": "tsc && electron-builder -m",
     "release": "tsc && build",
@@ -46,11 +46,14 @@
   },
   "devDependencies": {
     "@types/electron-settings": "^3.1.1",
+    "@types/jest": "^23.3.12",
     "@types/node-fetch": "^2.1.4",
     "all-contributors-cli": "^5.7.0",
     "electron": "^4.0.1",
     "electron-builder": "^20.38.2",
     "husky": "^1.2.0",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.5",
     "tslint": "^5.12.0",
     "tslint-config-prettier": "^1.17.0",
     "typescript": "^3.2.2"
