@@ -6,6 +6,14 @@ import Netlify, { API_URL } from './netlify';
 console.log = () => {};
 
 jest.mock('node-fetch');
+jest.mock('electron', () => ({
+  dialog: {
+    showMessageBox: jest.fn((options, cb) => cb(0))
+  },
+  shell: {
+    openExternal: jest.fn()
+  }
+}));
 
 interface FetchResponse {
   response?: number;
@@ -102,10 +110,27 @@ describe('netlify api client', () => {
   });
 
   describe(':authorize', () => {
-    test('calls the API once to check validity of the token', async () => {
+    test('calls the API check validity of the token and return client', async () => {
       mFetch.mockResolvedValue(getFetchPromise({}));
-      await apiClient.authorize('clientId');
+      const client = await apiClient.authorize('clientId');
       expect(mFetch.mock.calls.length).toBe(1);
+      expect(client).toBe(apiClient);
+    });
+
+    test('invalid token', async () => {
+      const newToken = 'yeah-awesome-token';
+
+      mFetch
+        .mockResolvedValueOnce(getFetchPromise({}, { status: 401 }))
+        .mockResolvedValueOnce(getFetchPromise({ id: 'ticketId' }))
+        .mockResolvedValueOnce(getFetchPromise({ authorized: false }))
+        .mockResolvedValueOnce(getFetchPromise({ authorized: true }))
+        .mockResolvedValueOnce(getFetchPromise({ access_token: newToken }));
+
+      const client = await apiClient.authorize('clientId2');
+
+      expect(client.accessToken).toBe(newToken);
+      expect(mFetch.mock.calls.length).toBe(5);
     });
   });
 });

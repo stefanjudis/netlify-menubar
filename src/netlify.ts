@@ -71,7 +71,7 @@ class Netlify {
         // meaning that the access token is not valid
         // -> clear access token and issue a new one
         this.accessToken = null;
-        this.authorize(clientId);
+        return this.authorize(clientId);
       }
     }
 
@@ -171,6 +171,7 @@ class Netlify {
   private async getAccessToken(ticketId: string): Promise<string> {
     const waitFor = (delay: number): Promise<void> =>
       new Promise(resolve => setTimeout(resolve, delay));
+
     const checkTicket = async (): Promise<NetlifyTicket> => {
       return this.fetch(`/oauth/tickets/${ticketId}`);
     };
