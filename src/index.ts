@@ -1,5 +1,5 @@
 import AutoLaunch from 'auto-launch';
-import { app } from 'electron'; // tslint:disable-line no-implicit-dependencies
+import { app, powerMonitor } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import settings from 'electron-settings';
 import { autoUpdater } from 'electron-updater';
 import Connection from './connection';
@@ -61,6 +61,9 @@ const onAppReady = async (): Promise<void> => {
   app.dock.hide();
 
   autoUpdater.checkForUpdatesAndNotify();
+  powerMonitor.on('unlock-screen', () =>
+    autoUpdater.checkForUpdatesAndNotify()
+  );
 };
 
 export const start = () => {
