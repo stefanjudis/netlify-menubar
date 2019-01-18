@@ -9,8 +9,9 @@
 ## Features
 
 - monitor deploys of a certain site
-- poll new deploy information
 - get notified when a new deploy is ready
+- trigger deploys
+- automatic app updates (since Netlify Menubar `1.2.1`)
 
 ## Installation
 
@@ -35,6 +36,7 @@ Thanks goes to these wonderful people ([emoji key](https://github.com/all-contri
 <!-- prettier-ignore -->
 | [<img src="https://avatars2.githubusercontent.com/u/4260265?v=4" width="100px;"/><br /><sub><b>Johnny Bell</b></sub>](http://johnnybell.io)<br />[💻](https://github.com/stefanjudis/netlify-menubar/commits?author=johnnyxbell "Code") | [<img src="https://avatars3.githubusercontent.com/u/7389358?v=4" width="100px;"/><br /><sub><b>Vivian Guillen</b></sub>](http://codequeen.io)<br />[💻](https://github.com/stefanjudis/netlify-menubar/commits?author=viviangb "Code") [🎨](#design-viviangb "Design") |
 | :---: | :---: |
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
