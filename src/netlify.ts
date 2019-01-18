@@ -48,7 +48,7 @@ interface NetlifyAccessToken {
 }
 
 export const API_URL = 'https://api.netlify.com/api/v1';
-export const UI_URL = 'https://api.netlify.com/api/v1';
+export const UI_URL = 'https://app.netlify.com';
 
 class Netlify {
   public accessToken: string | null;
