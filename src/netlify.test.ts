@@ -15,12 +15,12 @@ jest.mock('electron', () => ({
   }
 }));
 
-interface FetchResponse {
+interface IFetchResponse {
   response?: number;
   json: () => {};
 }
 
-const getFetchPromise = (json: {} = {}, response: {} = {}): FetchResponse => {
+const getFetchPromise = (json: {} = {}, response: {} = {}): IFetchResponse => {
   return {
     ...(response && response),
     json: () => new Promise(res => res(json))

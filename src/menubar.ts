@@ -11,48 +11,56 @@ import {
 import settings from 'electron-settings';
 import Connection from './connection';
 import ICONS from './icons';
-import Netlify, { NetlifyDeploy, NetlifySite, NetlifyUser } from './netlify';
+import Netlify, { INetlifyDeploy, INetlifySite, INetlifyUser } from './netlify';
+import { getFormattedDeploys, getSuspendedDeployCount } from './util';
 
-interface JsonObject {
+interface IJsonObject {
   [x: string]: JsonValue;
 }
 
-interface JsonArray extends Array<JsonValue> {} // tslint:disable-line no-empty-interface
-type JsonValue = string | number | boolean | null | JsonArray | JsonObject;
+interface IJsonArray extends Array<JsonValue> {} // tslint:disable-line no-empty-interface
+type JsonValue = string | number | boolean | null | IJsonArray | IJsonObject;
 
-interface AppSettings {
+interface IAppSettings {
   launchAtStart: boolean;
   pollInterval: number;
   showNotifications: boolean;
+  showPendingBuilds: boolean;
   currentSiteId: string | null;
 }
 
-interface AppState {
+interface IAppState {
   menuIsOpen: boolean;
-  previousDeployState: string;
+  previousDeploy: INetlifyDeploy | null;
 }
 
-interface AppNetlifyData {
-  deploys: NetlifyDeploy[];
-  sites: NetlifySite[];
-  user?: NetlifyUser;
+export interface IAppDeploys {
+  pending: INetlifyDeploy[];
+  ready: INetlifyDeploy[];
 }
 
-const DEFAULT_SETTINGS: AppSettings = {
+interface IAppNetlifyData {
+  deploys: IAppDeploys;
+  sites: INetlifySite[];
+  user?: INetlifyUser;
+}
+
+const DEFAULT_SETTINGS: IAppSettings = {
   currentSiteId: null,
   launchAtStart: false,
   pollInterval: 10000,
-  showNotifications: false
+  showNotifications: false,
+  showPendingBuilds: true
 };
 
 export default class UI {
   private apiClient: Netlify;
   private autoLauncher: AutoLaunch;
   private connection: Connection;
-  private state: AppState;
+  private state: IAppState;
   private tray: Tray;
-  private settings: AppSettings;
-  private netlifyData: AppNetlifyData;
+  private settings: IAppSettings;
+  private netlifyData: IAppNetlifyData;
 
   public constructor({
     apiClient,
@@ -74,13 +82,13 @@ export default class UI {
     };
 
     this.netlifyData = {
-      deploys: [],
+      deploys: { pending: [], ready: [] },
       sites: []
     };
 
     this.state = {
       menuIsOpen: false,
-      previousDeployState: ''
+      previousDeploy: null
     };
 
     this.setup().then(() => {
@@ -114,7 +122,7 @@ export default class UI {
       ]);
 
       this.netlifyData = {
-        deploys,
+        deploys: getFormattedDeploys(deploys),
         sites,
         user: {
           email: currentUser.email
@@ -123,7 +131,7 @@ export default class UI {
     });
   }
 
-  private getSite(siteId: string): NetlifySite {
+  private getSite(siteId: string): INetlifySite {
     return (
       this.netlifyData.sites.find(
         ({ id }) => id === this.settings.currentSiteId
@@ -137,32 +145,44 @@ export default class UI {
   }
 
   private getDeploysSubmenu(
-    deploys: NetlifyDeploy[],
-    currentSite: NetlifySite
+    deploys: IAppDeploys,
+    currentSite: INetlifySite
   ): MenuItemConstructorOptions[] {
-    return deploys
-      .slice(0, 20)
-      .map(({ context, created_at, state, branch, deploy_time, id }) => {
-        return {
-          click: () =>
-            shell.openExternal(
-              `https://app.netlify.com/sites/${currentSite.name}/deploys/${id}`
-            ),
-          label: `${context}: ${state} → ${branch} | ${distanceInWords(
-            new Date(created_at),
-            new Date()
-          )} ago ${deploy_time ? `in ${deploy_time}s` : ''}`
-        };
-      });
+    const { pending: pendingDeploys, ready: doneDeploys } = deploys;
+    const mapDeployToMenuItem = ({
+      context,
+      created_at,
+      state,
+      branch,
+      deploy_time,
+      id
+    }) => {
+      return {
+        click: () =>
+          shell.openExternal(
+            `https://app.netlify.com/sites/${currentSite.name}/deploys/${id}`
+          ),
+        label: `${context}: ${state} → ${branch} | ${distanceInWords(
+          new Date(created_at),
+          new Date()
+        )} ago ${deploy_time ? `in ${deploy_time}s` : ''}`
+      };
+    };
+
+    return [
+      ...pendingDeploys.map(mapDeployToMenuItem),
+      ...(pendingDeploys.length ? [{ label: '—', enabled: false }] : []),
+      ...doneDeploys.map(mapDeployToMenuItem)
+    ].slice(0, 20);
   }
 
-  private getSitesSubmenu(sites: NetlifySite[]): MenuItemConstructorOptions[] {
+  private getSitesSubmenu(sites: INetlifySite[]): MenuItemConstructorOptions[] {
     return sites.map(
       ({ id, url }): MenuItemConstructorOptions => ({
         checked: this.settings.currentSiteId === id,
         click: async () => {
           this.saveSetting('currentSiteId', id);
-          this.state.previousDeployState = '';
+          this.state.previousDeploy = null;
           this.updateDeploys();
         },
         label: `${url.replace(/https?:\/\//, '')}`,
@@ -172,7 +192,12 @@ export default class UI {
   }
 
   private getSettingsSubmenu(): MenuItemConstructorOptions[] {
-    const { pollInterval, showNotifications, launchAtStart } = this.settings;
+    const {
+      pollInterval,
+      showNotifications,
+      showPendingBuilds,
+      launchAtStart
+    } = this.settings;
     const pollDurations = [
       { value: 10000, label: '10sec' },
       { value: 30000, label: '30sec' },
@@ -202,6 +227,12 @@ export default class UI {
         type: 'checkbox'
       },
       {
+        checked: showPendingBuilds,
+        click: () => this.saveSetting('showPendingBuilds', !showPendingBuilds),
+        label: 'Show pending deploys',
+        type: 'checkbox'
+      },
+      {
         label: 'Poll interval',
         submenu: pollDurations.map(
           ({ label, value }): MenuItemConstructorOptions => ({
@@ -222,8 +253,9 @@ export default class UI {
       // catch possible network hickups
       try {
         await fn();
-        this.setNewDeployState();
-        this.tray.setImage(ICONS[this.state.previousDeployState]);
+        if (this.state.previousDeploy) {
+          this.tray.setImage(ICONS[this.state.previousDeploy.state]);
+        }
       } catch (e) {
         this.tray.setImage(ICONS.offline);
       }
@@ -232,34 +264,61 @@ export default class UI {
     }
 
     this.render();
+    this.evaluateCurrentDeployState();
   }
 
   private updateDeploys(): Promise<void> {
     return this.fetchData(async () => {
       if (this.settings.currentSiteId) {
-        this.netlifyData.deploys = await this.apiClient.getSiteDeploys(
+        const deploys = await this.apiClient.getSiteDeploys(
           this.settings.currentSiteId
         );
+
+        this.netlifyData.deploys = getFormattedDeploys(deploys);
       }
     });
   }
 
-  private setNewDeployState(): void {
+  private evaluateCurrentDeployState(): void {
     const { deploys } = this.netlifyData;
-    const deployState = deploys[0] ? deploys[0].state : '';
+    let currentDeploy: INetlifyDeploy | undefined;
 
-    const newDeployStateIsAvailable =
-      this.state.previousDeployState &&
-      this.state.previousDeployState !== deployState;
-
-    if (this.settings.showNotifications && newDeployStateIsAvailable) {
-      new Notification({
-        body: `Last deploy in the queue switched to ${deployState}`,
-        title: 'New deploy status'
-      }).show();
+    if (deploys.pending.length) {
+      currentDeploy = deploys.pending[deploys.pending.length - 1];
+    } else if (deploys.ready.length) {
+      currentDeploy = deploys.ready[0];
     }
 
-    this.state.previousDeployState = deployState;
+    if (!currentDeploy) {
+      return;
+    }
+
+    const { previousDeploy } = this.state;
+    const isDifferentDeploy = (prev: INetlifyDeploy, current: INetlifyDeploy) =>
+      prev.id !== current.id;
+    const isDifferentState = (prev: INetlifyDeploy, current: INetlifyDeploy) =>
+      prev.state !== current.state;
+    let notification;
+
+    if (previousDeploy) {
+      if (isDifferentDeploy(previousDeploy, currentDeploy)) {
+        notification = {
+          body: `New deploy status: ${currentDeploy.state}`,
+          title: 'New deploy started'
+        };
+      } else if (isDifferentState(previousDeploy, currentDeploy)) {
+        notification = {
+          body: `Deploy status: ${currentDeploy.state}`,
+          title: 'Deploy progressed'
+        };
+      }
+    }
+
+    if (notification && this.settings.showNotifications) {
+      new Notification(notification).show();
+    }
+
+    this.state.previousDeploy = currentDeploy;
   }
 
   private saveSetting(key: string, value: JsonValue): void {
@@ -274,6 +333,18 @@ export default class UI {
       return;
     }
 
+    this.tray.setTitle(
+      getSuspendedDeployCount(
+        this.settings.showPendingBuilds
+          ? this.netlifyData.deploys.pending.length
+          : 0
+      )
+    );
+
+    this.renderMenu(this.settings.currentSiteId);
+  }
+
+  private async renderMenu(currentSiteId: string): Promise<void> {
     if (!this.connection.isOnline) {
       return this.tray.setContextMenu(
         Menu.buildFromTemplate([
@@ -285,7 +356,6 @@ export default class UI {
       );
     }
 
-    const { currentSiteId } = this.settings;
     const { sites, deploys, user } = this.netlifyData;
 
     const currentSite = this.getSite(currentSiteId);
@@ -320,6 +390,10 @@ export default class UI {
         label: 'Go to Admin'
       },
       {
+        enabled: false,
+        label: '—'
+      },
+      {
         label: 'Deploys',
         submenu: this.getDeploysSubmenu(deploys, currentSite)
       },
@@ -332,10 +406,18 @@ export default class UI {
         label: 'Trigger new deploy'
       },
       { type: 'separator' },
-      { type: 'separator' },
       {
         label: 'Settings',
         submenu: this.getSettingsSubmenu()
+      },
+      { type: 'separator' },
+      {
+        click: () => {
+          shell.openExternal(
+            'https://github.com/stefanjudis/netlify-menubar/issues/new'
+          );
+        },
+        label: 'Give feedback'
       },
       { type: 'separator' },
       { label: 'Quit Netlify Menubar', role: 'quit' }

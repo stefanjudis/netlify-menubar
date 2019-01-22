@@ -6,13 +6,13 @@ const showMessageBox = (options: any): Promise<number> =>
     dialog.showMessageBox(options, responseNumber => resolve(responseNumber));
   });
 
-interface NetlifyTicket {
+interface INetlifyTicket {
   id: string;
   client_id: string;
   authorized: boolean;
 }
 
-interface NetlifyBuild {
+interface INetlifyBuild {
   id: string;
   deploy_id: string;
   sha: string;
@@ -20,27 +20,28 @@ interface NetlifyBuild {
   error: string;
 }
 
-export interface NetlifyDeploy {
+export interface INetlifyDeploy {
   context: string;
   created_at: string;
   state: string;
   branch: string;
   deploy_time: string;
+  error_message: string;
   id: string;
 }
 
-export interface NetlifySite {
+export interface INetlifySite {
   id: string;
   name: string;
   url: string;
   admin_url: string;
 }
 
-export interface NetlifyUser {
+export interface INetlifyUser {
   email: string;
 }
 
-interface NetlifyAccessToken {
+interface INetlifyAccessToken {
   id: string;
   access_token: string;
   user_id: string;
@@ -89,7 +90,7 @@ class Netlify {
       return process.exit();
     }
 
-    const ticket = await this.fetch<NetlifyTicket>(
+    const ticket = await this.fetch<INetlifyTicket>(
       `/oauth/tickets?client_id=${clientId}`,
       'POST'
     );
@@ -105,40 +106,40 @@ class Netlify {
 
   /**
    * @param {string} siteId
-   * @returns {Promise<NetlifyBuild>}
+   * @returns {Promise<INetlifyBuild>}
    * @memberof Netlify
    * @tested
    */
-  public createSiteBuild(siteId: string): Promise<NetlifyBuild> {
-    return this.fetch<NetlifyBuild>(`/sites/${siteId}/builds`, 'POST');
+  public createSiteBuild(siteId: string): Promise<INetlifyBuild> {
+    return this.fetch<INetlifyBuild>(`/sites/${siteId}/builds`, 'POST');
   }
 
   /**
-   * @returns {Promise<NetlifyUser>}
+   * @returns {Promise<INetlifyUser>}
    * @memberof Netlify
    * @tested
    */
-  public getCurrentUser(): Promise<NetlifyUser> {
-    return this.fetch<NetlifyUser>('/user');
+  public getCurrentUser(): Promise<INetlifyUser> {
+    return this.fetch<INetlifyUser>('/user');
   }
 
   /**
-   * @returns {Promise<NetlifySite[]>}
+   * @returns {Promise<INetlifySite[]>}
    * @memberof Netlify
    * @tested
    */
-  public getSites(): Promise<NetlifySite[]> {
-    return this.fetch<NetlifySite[]>('/sites');
+  public getSites(): Promise<INetlifySite[]> {
+    return this.fetch<INetlifySite[]>('/sites');
   }
 
   /**
    * @param {string} siteId
-   * @returns {Promise<NetlifyDeploy[]>}
+   * @returns {Promise<INetlifyDeploy[]>}
    * @memberof Netlify
    * @tested
    */
-  public getSiteDeploys(siteId: string): Promise<NetlifyDeploy[]> {
-    return this.fetch<NetlifyDeploy[]>(`/sites/${siteId}/deploys`);
+  public getSiteDeploys(siteId: string): Promise<INetlifyDeploy[]> {
+    return this.fetch<INetlifyDeploy[]>(`/sites/${siteId}/deploys`);
   }
 
   /**
@@ -172,11 +173,11 @@ class Netlify {
     const waitFor = (delay: number): Promise<void> =>
       new Promise(resolve => setTimeout(resolve, delay));
 
-    const checkTicket = async (): Promise<NetlifyTicket> => {
+    const checkTicket = async (): Promise<INetlifyTicket> => {
       return this.fetch(`/oauth/tickets/${ticketId}`);
     };
 
-    let authorizedTicket: NetlifyTicket | null = null;
+    let authorizedTicket: INetlifyTicket | null = null;
 
     while (!authorizedTicket) {
       const ticket = await checkTicket();
@@ -186,7 +187,7 @@ class Netlify {
       await waitFor(1000);
     }
 
-    const response = await this.fetch<NetlifyAccessToken>(
+    const response = await this.fetch<INetlifyAccessToken>(
       `/oauth/tickets/${ticketId}/exchange`,
       'POST'
     );

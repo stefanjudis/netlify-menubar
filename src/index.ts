@@ -3,7 +3,7 @@ import { app, powerMonitor } from 'electron'; // tslint:disable-line no-implicit
 import settings from 'electron-settings';
 import { autoUpdater } from 'electron-updater';
 import Connection from './connection';
-import MenuUI from './menu-ui';
+import MenuUI from './menubar';
 import Netlify from './netlify';
 
 const OAUTH_CLIENT_ID =
