@@ -385,6 +385,15 @@ export default class UI {
         submenu: this.getSettingsSubmenu()
       },
       { type: 'separator' },
+      {
+        click: () => {
+          shell.openExternal(
+            'https://github.com/stefanjudis/netlify-menubar/issues/new'
+          );
+        },
+        label: 'Give feedback'
+      },
+      { type: 'separator' },
       { label: 'Quit Netlify Menubar', role: 'quit' }
     ]);
 
