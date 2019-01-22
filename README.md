@@ -6,6 +6,8 @@
 
 ![Netlify Menubar UI opened showing the recent builds](./screenshot.jpg)
 
+**🙈 It's my first project in TypeScript – don't judge. 🙈**
+
 ## Features
 
 - monitor deploys of a certain site
