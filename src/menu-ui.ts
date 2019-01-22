@@ -90,6 +90,7 @@ export default class UI {
             await this.updateDeploys();
           } else {
             this.tray.setImage(ICONS.offline);
+            await this.render()
             console.error('Currently offline, unable to get deploy updates.'); // tslint:disable-line no-console
           }
           repeat();
