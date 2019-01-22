@@ -247,6 +247,7 @@ export default class UI {
       // catch possible network hickups
       try {
         await fn();
+        this.evaluateDeployState();
         if (this.state.previousDeploy) {
           this.tray.setImage(ICONS[this.state.previousDeploy.state]);
         }
@@ -258,7 +259,6 @@ export default class UI {
     }
 
     this.render();
-    this.evaluateCurrentDeployState();
   }
 
   private updateDeploys(): Promise<void> {
@@ -273,7 +273,7 @@ export default class UI {
     });
   }
 
-  private evaluateCurrentDeployState(): void {
+  private evaluateDeployState(): void {
     const { deploys } = this.netlifyData;
     let currentDeploy: INetlifyDeploy | undefined;
 
