@@ -31,7 +31,7 @@ interface IAppSettings {
 
 interface IAppState {
   menuIsOpen: boolean;
-  previousDeployState: string;
+  previousDeploy: INetlifyDeploy | null;
 }
 
 export interface IAppDeploys {
@@ -88,7 +88,7 @@ export default class UI {
 
     this.state = {
       menuIsOpen: false,
-      previousDeployState: ''
+      previousDeploy: null
     };
 
     this.setup().then(() => {
@@ -176,7 +176,7 @@ export default class UI {
         checked: this.settings.currentSiteId === id,
         click: async () => {
           this.saveSetting('currentSiteId', id);
-          this.state.previousDeployState = '';
+          this.state.previousDeploy = null;
           this.updateDeploys();
         },
         label: `${url.replace(/https?:\/\//, '')}`,
@@ -247,8 +247,9 @@ export default class UI {
       // catch possible network hickups
       try {
         await fn();
-        this.setNewDeployState();
-        this.tray.setImage(ICONS[this.state.previousDeployState]);
+        if (this.state.previousDeploy) {
+          this.tray.setImage(ICONS[this.state.previousDeploy.state]);
+        }
       } catch (e) {
         this.tray.setImage(ICONS.offline);
       }
@@ -257,6 +258,7 @@ export default class UI {
     }
 
     this.render();
+    this.evaluateCurrentDeployState();
   }
 
   private updateDeploys(): Promise<void> {
@@ -271,28 +273,46 @@ export default class UI {
     });
   }
 
-  private setNewDeployState(): void {
+  private evaluateCurrentDeployState(): void {
     const { deploys } = this.netlifyData;
-    let deployState = '';
+    let currentDeploy: INetlifyDeploy | undefined;
 
     if (deploys.pending.length) {
-      deployState = deploys.pending[deploys.pending.length - 1].state;
+      currentDeploy = deploys.pending[deploys.pending.length - 1];
     } else if (deploys.ready.length) {
-      deployState = deploys.ready[0].state;
+      currentDeploy = deploys.ready[0];
     }
 
-    const newDeployStateIsAvailable =
-      this.state.previousDeployState &&
-      this.state.previousDeployState !== deployState;
-
-    if (this.settings.showNotifications && newDeployStateIsAvailable) {
-      new Notification({
-        body: `Last deploy in the queue switched to ${deployState}`,
-        title: 'New deploy status'
-      }).show();
+    if (!currentDeploy) {
+      return;
     }
 
-    this.state.previousDeployState = deployState;
+    const { previousDeploy } = this.state;
+    const isDifferentDeploy = (prev: INetlifyDeploy, current: INetlifyDeploy) =>
+      prev.id !== current.id;
+    const isDifferentState = (prev: INetlifyDeploy, current: INetlifyDeploy) =>
+      prev.state !== current.state;
+    let notification;
+
+    if (previousDeploy) {
+      if (isDifferentDeploy(previousDeploy, currentDeploy)) {
+        notification = {
+          body: `New deploy status: ${currentDeploy.state}`,
+          title: 'New deploy started'
+        };
+      } else if (isDifferentState(previousDeploy, currentDeploy)) {
+        notification = {
+          body: `Deploy status: ${currentDeploy.state}`,
+          title: 'Deploy progressed'
+        };
+      }
+    }
+
+    if (notification && this.settings.showNotifications) {
+      new Notification(notification).show();
+    }
+
+    this.state.previousDeploy = currentDeploy;
   }
 
   private saveSetting(key: string, value: JsonValue): void {
