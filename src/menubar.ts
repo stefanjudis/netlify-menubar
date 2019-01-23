@@ -12,7 +12,11 @@ import settings from 'electron-settings';
 import Connection from './connection';
 import ICONS from './icons';
 import Netlify, { INetlifyDeploy, INetlifySite, INetlifyUser } from './netlify';
-import { getFormattedDeploys, getSuspendedDeployCount } from './util';
+import {
+  getDeployNotification,
+  getFormattedDeploys,
+  getSuspendedDeployCount
+} from './util';
 
 interface IJsonObject {
   [x: string]: JsonValue;
@@ -275,6 +279,7 @@ export default class UI {
 
   private evaluateDeployState(): void {
     const { deploys } = this.netlifyData;
+    const { previousDeploy } = this.state;
     let currentDeploy: INetlifyDeploy | undefined;
 
     if (deploys.pending.length) {
@@ -283,33 +288,15 @@ export default class UI {
       currentDeploy = deploys.ready[0];
     }
 
-    if (!currentDeploy) {
+    if (!currentDeploy || !previousDeploy) {
       return;
     }
 
-    const { previousDeploy } = this.state;
-    const isDifferentDeploy = (prev: INetlifyDeploy, current: INetlifyDeploy) =>
-      prev.id !== current.id;
-    const isDifferentState = (prev: INetlifyDeploy, current: INetlifyDeploy) =>
-      prev.state !== current.state;
-    let notification;
-
-    if (previousDeploy) {
-      if (isDifferentDeploy(previousDeploy, currentDeploy)) {
-        notification = {
-          body: `New deploy status: ${currentDeploy.state}`,
-          title: 'New deploy started'
-        };
-      } else if (isDifferentState(previousDeploy, currentDeploy)) {
-        notification = {
-          body: `Deploy status: ${currentDeploy.state}`,
-          title: 'Deploy progressed'
-        };
+    if (this.settings.showNotifications) {
+      const notification = getDeployNotification(previousDeploy, currentDeploy);
+      if (notification) {
+        new Notification(notification).show();
       }
-    }
-
-    if (notification && this.settings.showNotifications) {
-      new Notification(notification).show();
     }
 
     this.state.previousDeploy = currentDeploy;

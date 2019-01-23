@@ -7,9 +7,46 @@ interface IDeploysReduceAcc {
   foundReadyDeploy: boolean;
 }
 
-const isReady = deploy => deploy.state === 'ready';
-const isSkipped = deploy =>
+interface INotification {
+  body: string;
+  title: string;
+}
+
+const isReady = (deploy: INetlifyDeploy) => deploy.state === 'ready';
+const isSkipped = (deploy: INetlifyDeploy) =>
   deploy.state === 'error' && deploy.error_message === 'Skipped';
+const isDifferentDeploy = (prev: INetlifyDeploy, current: INetlifyDeploy) =>
+  prev.id !== current.id;
+const isDifferentDeployState = (
+  prev: INetlifyDeploy,
+  current: INetlifyDeploy
+) => prev.state !== current.state;
+
+/**
+ *
+ * @param previous {INetlifyDeploy}
+ * @param current {INetlifyDeploy}
+ * @returns INotification | null
+ * @tested
+ */
+export const getDeployNotification = (
+  previous: INetlifyDeploy,
+  current: INetlifyDeploy
+): INotification | null => {
+  if (isDifferentDeploy(previous, current)) {
+    return {
+      body: `New deploy state: ${current.state}`,
+      title: 'New deploy started'
+    };
+  } else if (isDifferentDeployState(previous, current)) {
+    return {
+      body: `Deploy state: ${current.state}`,
+      title: 'Deploy progressed'
+    };
+  }
+
+  return null;
+};
 
 /**
  *
