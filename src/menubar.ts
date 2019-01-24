@@ -395,6 +395,14 @@ export default class UI {
       {
         click: () => {
           shell.openExternal(
+            `https://github.com/stefanjudis/netlify-menubar/releases/tag/v${app.getVersion()}`
+          );
+        },
+        label: 'Changelog'
+      },
+      {
+        click: () => {
+          shell.openExternal(
             'https://github.com/stefanjudis/netlify-menubar/issues/new'
           );
         },
