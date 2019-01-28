@@ -288,11 +288,11 @@ export default class UI {
       currentDeploy = deploys.ready[0];
     }
 
-    if (!currentDeploy || !previousDeploy) {
+    if (!currentDeploy) {
       return;
     }
 
-    if (this.settings.showNotifications) {
+    if (this.settings.showNotifications && previousDeploy) {
       const notification = getDeployNotification(previousDeploy, currentDeploy);
       if (notification) {
         new Notification(notification).show();
