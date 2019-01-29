@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`menu helper functions getDeploysMenu should render a correct deploy menu 1`] = `
+Array [
+  Object {
+    "click": [Function],
+    "label": "production: building → master | 3 months ago in 123s",
+  },
+  Object {
+    "enabled": false,
+    "label": "—",
+  },
+  Object {
+    "click": [Function],
+    "label": "production: ready → master | 3 months ago in 126s",
+  },
+]
+`;
+
+exports[`menu helper functions getSitesMenu should render a correct sites menu 1`] = `
+Array [
+  Object {
+    "checked": false,
+    "click": [Function],
+    "label": "foo.com",
+    "type": "radio",
+  },
+  Object {
+    "checked": true,
+    "click": [Function],
+    "label": "current.com",
+    "type": "radio",
+  },
+  Object {
+    "checked": false,
+    "click": [Function],
+    "label": "bar.com",
+    "type": "radio",
+  },
+]
+`;

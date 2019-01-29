@@ -1,5 +1,4 @@
 import AutoLaunch from 'auto-launch';
-import { distanceInWords } from 'date-fns';
 import {
   app,
   Menu,
@@ -11,6 +10,7 @@ import {
 import settings from 'electron-settings';
 import Connection from './connection';
 import ICONS from './icons';
+import { getDeploysMenu, getSitesMenu } from './menus';
 import Netlify, { INetlifyDeploy, INetlifySite, INetlifyUser } from './netlify';
 import {
   getDeployNotification,
@@ -140,53 +140,6 @@ export default class UI {
   private async getFallbackSiteId(): Promise<string> {
     const sites = await this.apiClient.getSites();
     return sites[0].id;
-  }
-
-  private getDeploysSubmenu(
-    deploys: IAppDeploys,
-    currentSite: INetlifySite
-  ): MenuItemConstructorOptions[] {
-    const { pending: pendingDeploys, ready: doneDeploys } = deploys;
-    const mapDeployToMenuItem = ({
-      context,
-      created_at,
-      state,
-      branch,
-      deploy_time,
-      id
-    }) => {
-      return {
-        click: () =>
-          shell.openExternal(
-            `https://app.netlify.com/sites/${currentSite.name}/deploys/${id}`
-          ),
-        label: `${context}: ${state} → ${branch} | ${distanceInWords(
-          new Date(created_at),
-          new Date()
-        )} ago ${deploy_time ? `in ${deploy_time}s` : ''}`
-      };
-    };
-
-    return [
-      ...pendingDeploys.map(mapDeployToMenuItem),
-      ...(pendingDeploys.length ? [{ label: '—', enabled: false }] : []),
-      ...doneDeploys.map(mapDeployToMenuItem)
-    ].slice(0, 20);
-  }
-
-  private getSitesSubmenu(sites: INetlifySite[]): MenuItemConstructorOptions[] {
-    return sites.map(
-      ({ id, url }): MenuItemConstructorOptions => ({
-        checked: this.settings.currentSiteId === id,
-        click: async () => {
-          this.saveSetting('currentSiteId', id);
-          this.state.previousDeploy = null;
-          this.updateDeploys();
-        },
-        label: `${url.replace(/https?:\/\//, '')}`,
-        type: 'radio'
-      })
-    );
   }
 
   private getSettingsSubmenu(): MenuItemConstructorOptions[] {
@@ -353,7 +306,15 @@ export default class UI {
       { type: 'separator' },
       {
         label: 'Choose site:',
-        submenu: this.getSitesSubmenu(sites)
+        submenu: getSitesMenu({
+          currentSite,
+          onItemClick: siteId => {
+            this.saveSetting('currentSiteId', siteId);
+            this.state.previousDeploy = null;
+            this.updateDeploys();
+          },
+          sites
+        })
       },
       { type: 'separator' },
       {
@@ -376,7 +337,15 @@ export default class UI {
       },
       {
         label: 'Deploys',
-        submenu: this.getDeploysSubmenu(deploys, currentSite)
+        submenu: getDeploysMenu({
+          deploys,
+          onItemClick: deployId =>
+            shell.openExternal(
+              `https://app.netlify.com/sites/${
+                currentSite.name
+              }/deploys/${deployId}`
+            )
+        })
       },
       {
         click: async () => {
