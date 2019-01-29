@@ -415,9 +415,9 @@ export default class UI {
     menu.on('menu-will-show', () => (this.state.menuIsOpen = true));
     menu.on('menu-will-close', () => {
       this.state.menuIsOpen = false;
-      // this needs a round on the main thread otherwise
-      // the menu-reset will cancel click handlers
-      setTimeout(() => this.render(), 0);
+      // queue it behind other event handlers because otherwise
+      // the menu-rerender will cancel ongoing click handlers
+      setImmediate(() => this.render());
     });
 
     // avoid the menu to close in case the user has it open
