@@ -60,9 +60,10 @@ describe('utils', () => {
       const deploys = [
         getDeploy({ state: 'new', error_message: null, id: '1' }),
         getDeploy({ state: 'building', error_message: null, id: '2' }),
-        getDeploy({ state: 'error', error_message: 'Skipped', id: '3' }),
-        getDeploy({ state: 'ready', error_message: null, id: '4' }),
-        getDeploy({ state: 'ready', error_message: null, id: '5' })
+        getDeploy({ state: 'error', error_message: '', id: '3' }),
+        getDeploy({ state: 'error', error_message: 'Skipped', id: '4' }),
+        getDeploy({ state: 'ready', error_message: null, id: '5' }),
+        getDeploy({ state: 'ready', error_message: null, id: '6' })
       ];
 
       const {
@@ -70,7 +71,7 @@ describe('utils', () => {
         ready: readyDeploys
       } = getFormattedDeploys(deploys);
       expect(pendingDeploys.length).toBe(2);
-      expect(readyDeploys.length).toBe(3);
+      expect(readyDeploys.length).toBe(4);
     });
   });
 

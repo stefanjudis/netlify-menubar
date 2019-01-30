@@ -13,6 +13,7 @@ interface INotification {
 }
 
 const isReady = (deploy: INetlifyDeploy) => deploy.state === 'ready';
+const isError = (deploy: INetlifyDeploy) => deploy.state === 'error';
 const isSkipped = (deploy: INetlifyDeploy) =>
   deploy.state === 'error' && deploy.error_message === 'Skipped';
 const isDifferentDeploy = (prev: INetlifyDeploy, current: INetlifyDeploy) =>
@@ -57,7 +58,10 @@ export const getDeployNotification = (
 export const getFormattedDeploys = (deploys: INetlifyDeploy[]): IAppDeploys => {
   const formattedDeploys = deploys.reduce(
     (acc: IDeploysReduceAcc, deploy: INetlifyDeploy): IDeploysReduceAcc => {
-      if (!acc.foundReadyDeploy && (isReady(deploy) || isSkipped(deploy))) {
+      if (
+        !acc.foundReadyDeploy &&
+        (isReady(deploy) || isError(deploy) || isSkipped(deploy))
+      ) {
         acc.foundReadyDeploy = true;
       }
 
