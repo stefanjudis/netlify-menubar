@@ -72,9 +72,10 @@ const onAppReady = async (): Promise<void> => {
   app.dock.hide();
 
   autoUpdater.checkForUpdatesAndNotify();
-  autoUpdater.on('update-downloaded', () =>
-    ui.setState({ updateAvailable: true })
-  );
+  autoUpdater.on('update-downloaded', () => {
+    ui.on('ready-to-update', () => autoUpdater.quitAndInstall());
+    ui.setState({ updateAvailable: true });
+  });
   powerMonitor.on('unlock-screen', () =>
     autoUpdater.checkForUpdatesAndNotify()
   );

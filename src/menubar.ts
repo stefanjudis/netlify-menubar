@@ -7,6 +7,7 @@ import {
   Tray
 } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import settings from 'electron-settings';
+import { EventEmitter } from 'events';
 import { POLL_DURATIONS } from './config';
 import Connection from './connection';
 import ICONS from './icons';
@@ -57,7 +58,7 @@ const DEFAULT_SETTINGS: IAppSettings = {
   showNotifications: false
 };
 
-export default class UI {
+export default class UI extends EventEmitter {
   private apiClient: Netlify;
   private connection: Connection;
   private state: IAppState;
@@ -72,6 +73,8 @@ export default class UI {
     apiClient: Netlify;
     connection: Connection;
   }) {
+    super();
+
     this.tray = new Tray(ICONS.loading);
     this.apiClient = apiClient;
     this.connection = connection;
@@ -99,7 +102,7 @@ export default class UI {
             await this.updateDeploys();
           } else {
             this.tray.setImage(ICONS.offline);
-            await this.render()
+            await this.render();
             console.error('Currently offline, unable to get deploy updates.'); // tslint:disable-line no-console
           }
           repeat();
@@ -374,10 +377,7 @@ export default class UI {
       ...(this.state.updateAvailable
         ? [
             {
-              click: () => {
-                app.relaunch();
-                app.exit();
-              },
+              click: () => this.emit('ready-to-update'),
               label: 'Restart and update...'
             }
           ]
