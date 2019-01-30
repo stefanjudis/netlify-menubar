@@ -1,6 +1,28 @@
-import { getDeploysMenu, getSitesMenu } from './menus';
+import { getCheckboxMenu, getDeploysMenu, getSitesMenu } from './menus';
 
 describe('menu helper functions', () => {
+  describe('getCheckboxMenu', () => {
+    test('should render a correct checkbox settings menu', () => {
+      const result = getCheckboxMenu({
+        items: [
+          { label: 'Launch at start label', key: 'launchAtStart' },
+          { label: 'Show notifications label', key: 'showNotifications' }
+        ],
+        settings: {
+          currentSiteId: 'jooooooo',
+          launchAtStart: true,
+          pollInterval: 10000,
+          showNotifications: false
+        },
+
+        // tslint:disable-next-line
+        onItemClick: id => {}
+      });
+
+      expect(result).toMatchSnapshot();
+    });
+  });
+
   describe('getDeploysMenu', () => {
     test('should render a correct deploy menu', () => {
       const result = getDeploysMenu({

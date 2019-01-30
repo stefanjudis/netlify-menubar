@@ -1,5 +1,22 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`menu helper functions getCheckboxMenu should render a correct checkbox settings menu 1`] = `
+Array [
+  Object {
+    "checked": true,
+    "click": [Function],
+    "label": "Launch at start label",
+    "type": "checkbox",
+  },
+  Object {
+    "checked": false,
+    "click": [Function],
+    "label": "Show notifications label",
+    "type": "checkbox",
+  },
+]
+`;
+
 exports[`menu helper functions getDeploysMenu should render a correct deploy menu 1`] = `
 Array [
   Object {

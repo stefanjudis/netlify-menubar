@@ -1,6 +1,6 @@
 import { distanceInWords } from 'date-fns';
 import { MenuItemConstructorOptions, shell } from 'electron'; // tslint:disable-line no-implicit-dependencies
-import { IAppDeploys } from './menubar';
+import { IAppDeploys, IAppSettings } from './menubar';
 import { INetlifySite } from './netlify';
 
 interface IDeployMenuOptions {
@@ -54,6 +54,27 @@ export const getSitesMenu = ({
       click: () => onItemClick(id),
       label: `${url.replace(/https?:\/\//, '')}`,
       type: 'radio'
+    })
+  );
+};
+
+interface ICheckboxMenuOptions {
+  items: Array<{ key: string; label: string }>;
+  settings: IAppSettings;
+  onItemClick: (key: string, value: boolean) => void;
+}
+
+export const getCheckboxMenu = ({
+  items,
+  settings,
+  onItemClick
+}: ICheckboxMenuOptions): MenuItemConstructorOptions[] => {
+  return items.map(
+    ({ label, key }): MenuItemConstructorOptions => ({
+      checked: settings[key],
+      click: () => onItemClick(key, settings[key]),
+      label,
+      type: 'checkbox'
     })
   );
 };

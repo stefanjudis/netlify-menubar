@@ -8,9 +8,10 @@ import {
   Tray
 } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import settings from 'electron-settings';
+import { POLL_DURATIONS } from './config';
 import Connection from './connection';
 import ICONS from './icons';
-import { getDeploysMenu, getSitesMenu } from './menus';
+import { getCheckboxMenu, getDeploysMenu, getSitesMenu } from './menus';
 import Netlify, { INetlifyDeploy, INetlifySite, INetlifyUser } from './netlify';
 import {
   getFormattedDeploys,
@@ -25,11 +26,10 @@ interface IJsonObject {
 interface IJsonArray extends Array<JsonValue> {} // tslint:disable-line no-empty-interface
 type JsonValue = string | number | boolean | null | IJsonArray | IJsonObject;
 
-interface IAppSettings {
+export interface IAppSettings {
   launchAtStart: boolean;
   pollInterval: number;
   showNotifications: boolean;
-  showPendingBuilds: boolean;
   currentSiteId: string | null;
 }
 
@@ -54,8 +54,7 @@ const DEFAULT_SETTINGS: IAppSettings = {
   currentSiteId: null,
   launchAtStart: false,
   pollInterval: 10000,
-  showNotifications: false,
-  showPendingBuilds: true
+  showNotifications: false
 };
 
 export default class UI {
@@ -142,61 +141,6 @@ export default class UI {
   private async getFallbackSiteId(): Promise<string> {
     const sites = await this.apiClient.getSites();
     return sites[0].id;
-  }
-
-  private getSettingsSubmenu(): MenuItemConstructorOptions[] {
-    const {
-      pollInterval,
-      showNotifications,
-      showPendingBuilds,
-      launchAtStart
-    } = this.settings;
-    const pollDurations = [
-      { value: 10000, label: '10sec' },
-      { value: 30000, label: '30sec' },
-      { value: 60000, label: '1min' },
-      { value: 180000, label: '3min' },
-      { value: 300000, label: '5min' }
-    ];
-
-    return [
-      {
-        checked: launchAtStart,
-        click: () => {
-          this.saveSetting('launchAtStart', !launchAtStart);
-          if (!launchAtStart) {
-            this.autoLauncher.enable();
-          } else {
-            this.autoLauncher.disable();
-          }
-        },
-        label: 'Launch at start',
-        type: 'checkbox'
-      },
-      {
-        checked: showNotifications,
-        click: () => this.saveSetting('showNotifications', !showNotifications),
-        label: 'Show notifications',
-        type: 'checkbox'
-      },
-      {
-        checked: showPendingBuilds,
-        click: () => this.saveSetting('showPendingBuilds', !showPendingBuilds),
-        label: 'Show pending deploys',
-        type: 'checkbox'
-      },
-      {
-        label: 'Poll interval',
-        submenu: pollDurations.map(
-          ({ label, value }): MenuItemConstructorOptions => ({
-            checked: pollInterval === value,
-            click: () => this.saveSetting('pollInterval', value),
-            label,
-            type: 'radio'
-          })
-        )
-      }
-    ];
   }
 
   private async fetchData(fn: () => void): Promise<void> {
@@ -286,6 +230,14 @@ export default class UI {
     settings.set(key, value);
     this.settings[key] = value;
     this.render();
+
+    if (key === 'launchAtStart') {
+      if (value) {
+        this.autoLauncher.enable();
+      } else {
+        this.autoLauncher.disable();
+      }
+    }
   }
 
   private async render(): Promise<void> {
@@ -295,11 +247,7 @@ export default class UI {
     }
 
     this.tray.setTitle(
-      getSuspendedDeployCount(
-        this.settings.showPendingBuilds
-          ? this.netlifyData.deploys.pending.length
-          : 0
-      )
+      getSuspendedDeployCount(this.netlifyData.deploys.pending.length)
     );
 
     this.renderMenu(this.state.currentSite);
@@ -318,6 +266,7 @@ export default class UI {
     }
 
     const { sites, deploys, user } = this.netlifyData;
+    const { pollInterval } = this.settings;
 
     const menu = Menu.buildFromTemplate([
       {
@@ -376,6 +325,7 @@ export default class UI {
         click: async () => {
           this.fetchData(async () => {
             await this.apiClient.createSiteBuild(currentSite.id);
+            this.updateDeploys();
           });
         },
         label: 'Trigger new deploy'
@@ -383,23 +333,41 @@ export default class UI {
       { type: 'separator' },
       {
         label: 'Settings',
-        submenu: this.getSettingsSubmenu()
+        submenu: [
+          ...getCheckboxMenu({
+            items: [
+              { key: 'launchAtStart', label: 'Launch at Start' },
+              { key: 'showNotifications', label: 'Show notifications' }
+            ],
+            onItemClick: (key, value) => this.saveSetting(key, !value),
+            settings: this.settings
+          }),
+          {
+            label: 'Poll interval',
+            submenu: POLL_DURATIONS.map(
+              ({ label, value }): MenuItemConstructorOptions => ({
+                checked: pollInterval === value,
+                click: () => this.saveSetting('pollInterval', value),
+                label,
+                type: 'radio'
+              })
+            )
+          }
+        ]
       },
       { type: 'separator' },
       {
-        click: () => {
+        click: () =>
           shell.openExternal(
             `https://github.com/stefanjudis/netlify-menubar/releases/tag/v${app.getVersion()}`
-          );
-        },
+          ),
         label: 'Changelog'
       },
       {
-        click: () => {
+        click: () =>
           shell.openExternal(
             'https://github.com/stefanjudis/netlify-menubar/issues/new'
-          );
-        },
+          ),
         label: 'Give feedback'
       },
       { type: 'separator' },
