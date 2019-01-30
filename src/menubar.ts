@@ -95,7 +95,13 @@ export default class UI {
     this.setup().then(() => {
       const repeat = () => {
         setTimeout(async () => {
-          await this.updateDeploys();
+          if (this.connection.isOnline) {
+            await this.updateDeploys();
+          } else {
+            this.tray.setImage(ICONS.offline);
+            await this.render()
+            console.error('Currently offline, unable to get deploy updates.'); // tslint:disable-line no-console
+          }
           repeat();
         }, this.settings.pollInterval);
       };
