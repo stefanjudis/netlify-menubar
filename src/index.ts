@@ -33,7 +33,6 @@ const getOnlineConnection = (): Promise<Connection> => {
  */
 const onAppReady = async (): Promise<void> => {
   const connection = await getOnlineConnection();
-
   const apiClient = await getNetlifyClient(settings.get(
     'accessToken'
   ) as string);
@@ -61,6 +60,9 @@ const onAppReady = async (): Promise<void> => {
   app.dock.hide();
 
   autoUpdater.checkForUpdatesAndNotify();
+  autoUpdater.on('update-downloaded', () =>
+    ui.setState({ updateAvailable: true })
+  );
   powerMonitor.on('unlock-screen', () =>
     autoUpdater.checkForUpdatesAndNotify()
   );

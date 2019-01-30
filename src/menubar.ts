@@ -37,6 +37,7 @@ interface IAppState {
   currentSite?: INetlifySite;
   menuIsOpen: boolean;
   previousDeploy: INetlifyDeploy | null;
+  updateAvailable: boolean;
 }
 
 export interface IAppDeploys {
@@ -92,7 +93,8 @@ export default class UI {
 
     this.state = {
       menuIsOpen: false,
-      previousDeploy: null
+      previousDeploy: null,
+      updateAvailable: false
     };
 
     this.setup().then(() => {
@@ -105,6 +107,11 @@ export default class UI {
 
       repeat();
     });
+  }
+
+  public setState(state: Partial<IAppState>) {
+    this.state = { ...this.state, ...state };
+    this.render();
   }
 
   private async setup(): Promise<void> {
@@ -217,7 +224,7 @@ export default class UI {
         // won't disappear by itself
         // -> close it after certain timeframe automatically
         notification.on('show', () =>
-          setTimeout(() => notification.close(), 5000)
+          setTimeout(() => notification.close(), 4000)
         );
         notification.show();
       }
@@ -371,6 +378,17 @@ export default class UI {
         label: 'Give feedback'
       },
       { type: 'separator' },
+      ...(this.state.updateAvailable
+        ? [
+            {
+              click: () => {
+                app.relaunch();
+                app.exit();
+              },
+              label: 'Restart and update...'
+            }
+          ]
+        : []),
       { label: 'Quit Netlify Menubar', role: 'quit' }
     ]);
 
