@@ -1,7 +1,7 @@
 import { INetlifyDeploy } from './netlify';
 import {
-  getDeployNotification,
   getFormattedDeploys,
+  getNotificationOptions,
   getSuspendedDeployCount
 } from './util';
 
@@ -19,17 +19,20 @@ const getDeploy = (deploy: any): INetlifyDeploy => ({
 });
 
 describe('utils', () => {
-  describe(':getFormattedDeploys', () => {
+  describe(':getNotificationOptions', () => {
     test('returns correct notification for different deploys', () => {
       expect.assertions(2);
       const previousDeploy = getDeploy({ id: '123' });
       const currentDeploy = getDeploy({ id: '234', state: 'skipped' });
 
-      const notification = getDeployNotification(previousDeploy, currentDeploy);
+      const notificationOptions = getNotificationOptions(
+        previousDeploy,
+        currentDeploy
+      );
 
-      if (notification) {
-        expect(notification.title).toBe('New deploy started');
-        expect(notification.body).toBe('New deploy state: skipped');
+      if (notificationOptions) {
+        expect(notificationOptions.title).toBe('New deploy started');
+        expect(notificationOptions.body).toBe('New deploy state: skipped');
       }
     });
 
@@ -38,11 +41,14 @@ describe('utils', () => {
       const previousDeploy = getDeploy({ id: '123', state: 'pending' });
       const currentDeploy = getDeploy({ id: '1123', state: 'ready' });
 
-      const notification = getDeployNotification(previousDeploy, currentDeploy);
+      const notificationOptions = getNotificationOptions(
+        previousDeploy,
+        currentDeploy
+      );
 
-      if (notification) {
-        expect(notification.title).toBe('New deploy started');
-        expect(notification.body).toBe('New deploy state: ready');
+      if (notificationOptions) {
+        expect(notificationOptions.title).toBe('New deploy started');
+        expect(notificationOptions.body).toBe('New deploy state: ready');
       }
     });
 
@@ -50,9 +56,12 @@ describe('utils', () => {
       const previousDeploy = getDeploy({ id: '123', state: 'same' });
       const currentDeploy = getDeploy({ id: '123', state: 'same' });
 
-      const notification = getDeployNotification(previousDeploy, currentDeploy);
+      const notificationOptions = getNotificationOptions(
+        previousDeploy,
+        currentDeploy
+      );
 
-      expect(notification).toBeNull();
+      expect(notificationOptions).toBeNull();
     });
   });
   describe(':getFormattedDeploys', () => {

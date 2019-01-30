@@ -13,8 +13,8 @@ import ICONS from './icons';
 import { getDeploysMenu, getSitesMenu } from './menus';
 import Netlify, { INetlifyDeploy, INetlifySite, INetlifyUser } from './netlify';
 import {
-  getDeployNotification,
   getFormattedDeploys,
+  getNotificationOptions,
   getSuspendedDeployCount
 } from './util';
 
@@ -34,6 +34,7 @@ interface IAppSettings {
 }
 
 interface IAppState {
+  currentSite?: INetlifySite;
   menuIsOpen: boolean;
   previousDeploy: INetlifyDeploy | null;
 }
@@ -126,14 +127,15 @@ export default class UI {
           email: currentUser.email
         }
       };
+
+      this.state.currentSite = this.getSite(this.settings.currentSiteId);
     });
   }
 
   private getSite(siteId: string): INetlifySite {
     return (
-      this.netlifyData.sites.find(
-        ({ id }) => id === this.settings.currentSiteId
-      ) || this.netlifyData.sites[0]
+      this.netlifyData.sites.find(({ id }) => id === siteId) ||
+      this.netlifyData.sites[0]
     );
   }
 
@@ -232,8 +234,9 @@ export default class UI {
 
   private evaluateDeployState(): void {
     const { deploys } = this.netlifyData;
-    const { previousDeploy } = this.state;
-    let currentDeploy: INetlifyDeploy | undefined;
+    const { previousDeploy, currentSite } = this.state;
+
+    let currentDeploy: INetlifyDeploy | null = null;
 
     if (deploys.pending.length) {
       currentDeploy = deploys.pending[deploys.pending.length - 1];
@@ -241,14 +244,38 @@ export default class UI {
       currentDeploy = deploys.ready[0];
     }
 
-    if (!currentDeploy) {
+    // cover edge case for new users
+    // who don't have any deploys yet
+    if (currentDeploy === null) {
       return;
     }
 
     if (this.settings.showNotifications && previousDeploy) {
-      const notification = getDeployNotification(previousDeploy, currentDeploy);
-      if (notification) {
-        new Notification(notification).show();
+      const notificationOptions = getNotificationOptions(
+        previousDeploy,
+        currentDeploy
+      );
+
+      if (notificationOptions) {
+        const notification = new Notification(notificationOptions);
+
+        notification.on('click', event => {
+          if (currentSite && currentDeploy) {
+            shell.openExternal(
+              `https://app.netlify.com/sites/${currentSite.name}/deploys/${
+                currentDeploy.id
+              }`
+            );
+          }
+        });
+
+        // notifications with an attached click handler
+        // won't disappear by itself
+        // -> close it after certain timeframe automatically
+        notification.on('show', () =>
+          setTimeout(() => notification.close(), 5000)
+        );
+        notification.show();
       }
     }
 
@@ -262,8 +289,8 @@ export default class UI {
   }
 
   private async render(): Promise<void> {
-    if (!this.settings.currentSiteId) {
-      console.error('No current site id found'); // tslint:disable-line no-console
+    if (!this.state.currentSite) {
+      console.error('No current site found'); // tslint:disable-line no-console
       return;
     }
 
@@ -275,10 +302,10 @@ export default class UI {
       )
     );
 
-    this.renderMenu(this.settings.currentSiteId);
+    this.renderMenu(this.state.currentSite);
   }
 
-  private async renderMenu(currentSiteId: string): Promise<void> {
+  private async renderMenu(currentSite: INetlifySite): Promise<void> {
     if (!this.connection.isOnline) {
       return this.tray.setContextMenu(
         Menu.buildFromTemplate([
@@ -292,7 +319,6 @@ export default class UI {
 
     const { sites, deploys, user } = this.netlifyData;
 
-    const currentSite = this.getSite(currentSiteId);
     const menu = Menu.buildFromTemplate([
       {
         enabled: false,
@@ -311,6 +337,7 @@ export default class UI {
           onItemClick: siteId => {
             this.saveSetting('currentSiteId', siteId);
             this.state.previousDeploy = null;
+            this.state.currentSite = this.getSite(siteId);
             this.updateDeploys();
           },
           sites
@@ -348,7 +375,7 @@ export default class UI {
       {
         click: async () => {
           this.fetchData(async () => {
-            await this.apiClient.createSiteBuild(currentSiteId);
+            await this.apiClient.createSiteBuild(currentSite.id);
           });
         },
         label: 'Trigger new deploy'

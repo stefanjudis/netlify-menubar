@@ -1,3 +1,4 @@
+import { NotificationConstructorOptions } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import { IAppDeploys } from './menubar';
 import { INetlifyDeploy } from './netlify';
 
@@ -5,11 +6,6 @@ interface IDeploysReduceAcc {
   pending: INetlifyDeploy[];
   ready: INetlifyDeploy[];
   foundReadyDeploy: boolean;
-}
-
-interface INotification {
-  body: string;
-  title: string;
 }
 
 const isReady = (deploy: INetlifyDeploy) => deploy.state === 'ready';
@@ -30,10 +26,10 @@ const isDifferentDeployState = (
  * @returns INotification | null
  * @tested
  */
-export const getDeployNotification = (
+export const getNotificationOptions = (
   previous: INetlifyDeploy,
   current: INetlifyDeploy
-): INotification | null => {
+): NotificationConstructorOptions | null => {
   if (isDifferentDeploy(previous, current)) {
     return {
       body: `New deploy state: ${current.state}`,
