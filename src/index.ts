@@ -26,6 +26,17 @@ const getOnlineConnection = (): Promise<Connection> => {
   });
 };
 
+const configureAutoLauncher = (
+  autoLauncher: AutoLaunch,
+  { shouldAutoLaunch }
+): void => {
+  if (shouldAutoLaunch) {
+    autoLauncher.enable();
+  } else {
+    autoLauncher.disable();
+  }
+};
+
 /**
  *
  *
@@ -43,15 +54,16 @@ const onAppReady = async (): Promise<void> => {
     path: '/Applications/Netlify Menubar.app'
   });
 
-  if (settings.get('launchAtStart')) {
-    autoLauncher.enable();
-  } else {
-    autoLauncher.disable();
-  }
+  configureAutoLauncher(autoLauncher, {
+    shouldAutoLaunch: settings.get('launchAtStart')
+  });
+
+  settings.watch('launchAtStart', launchAtStart => {
+    configureAutoLauncher(autoLauncher, { shouldAutoLaunch: launchAtStart });
+  });
 
   const ui = new MenuUI({
     apiClient,
-    autoLauncher,
     connection
   });
 

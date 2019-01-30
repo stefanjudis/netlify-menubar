@@ -1,4 +1,3 @@
-import AutoLaunch from 'auto-launch';
 import {
   app,
   Menu,
@@ -60,7 +59,6 @@ const DEFAULT_SETTINGS: IAppSettings = {
 
 export default class UI {
   private apiClient: Netlify;
-  private autoLauncher: AutoLaunch;
   private connection: Connection;
   private state: IAppState;
   private tray: Tray;
@@ -69,16 +67,13 @@ export default class UI {
 
   public constructor({
     apiClient,
-    autoLauncher,
     connection
   }: {
     apiClient: Netlify;
-    autoLauncher: AutoLaunch;
     connection: Connection;
   }) {
     this.tray = new Tray(ICONS.loading);
     this.apiClient = apiClient;
-    this.autoLauncher = autoLauncher;
     this.connection = connection;
 
     this.settings = {
@@ -237,14 +232,6 @@ export default class UI {
     settings.set(key, value);
     this.settings[key] = value;
     this.render();
-
-    if (key === 'launchAtStart') {
-      if (value) {
-        this.autoLauncher.enable();
-      } else {
-        this.autoLauncher.disable();
-      }
-    }
   }
 
   private async render(): Promise<void> {
