@@ -2,4 +2,4 @@ language: node_js
 node_js:
   - '11'
 os: osx
-script: npm test && npm run release
+script: npm run test:ci && npm run release

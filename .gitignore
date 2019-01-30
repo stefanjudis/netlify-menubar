@@ -69,6 +69,9 @@ release
 # local certs
 .certificates.p12
 
+# codecov
+coverage
+
 # random stuff
 .DS_STORE
 .vscode
