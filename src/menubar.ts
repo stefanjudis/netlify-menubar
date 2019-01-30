@@ -326,9 +326,7 @@ export default class UI {
         label: 'Go to Site'
       },
       {
-        click: () => {
-          shell.openExternal(currentSite.admin_url);
-        },
+        click: () => shell.openExternal(currentSite.admin_url),
         label: 'Go to Admin'
       },
       {
