@@ -39,7 +39,7 @@ export const getDeploysMenu = ({
     },
     {
       enabled: false,
-      label: '—'
+      label: '————'
     },
     ...pendingDeploys.map(mapDeployToMenuItem),
     ...(pendingDeploys.length ? [{ label: '—', enabled: false }] : []),
