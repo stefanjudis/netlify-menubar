@@ -1,6 +1,6 @@
 {
   "name": "netlify-menubar",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "description": "A menubar app to keep track of Netlify builds",
   "author": "stefan judis <stefanjudis@gmail.com>",
   "main": "index.js",
