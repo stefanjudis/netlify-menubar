@@ -26,6 +26,12 @@ describe('menu helper functions', () => {
   describe('getDeploysMenu', () => {
     test('should render a correct deploy menu', () => {
       const result = getDeploysMenu({
+        currentSite: {
+          admin_url: 'https://foo-admin.com',
+          id: 'foo',
+          name: 'Foo',
+          url: 'https://foo.com'
+        },
         deploys: {
           pending: [
             {

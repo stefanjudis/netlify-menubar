@@ -315,6 +315,7 @@ export default class UI extends EventEmitter {
       {
         label: 'Deploys',
         submenu: getDeploysMenu({
+          currentSite,
           deploys,
           onItemClick: deployId =>
             shell.openExternal(

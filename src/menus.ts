@@ -4,11 +4,13 @@ import { IAppDeploys, IAppSettings } from './menubar';
 import { INetlifySite } from './netlify';
 
 interface IDeployMenuOptions {
+  currentSite: INetlifySite;
   deploys: IAppDeploys;
   onItemClick: (deployId: string) => void;
 }
 
 export const getDeploysMenu = ({
+  currentSite,
   deploys,
   onItemClick
 }: IDeployMenuOptions): MenuItemConstructorOptions[] => {
@@ -31,6 +33,14 @@ export const getDeploysMenu = ({
   };
 
   return [
+    {
+      click: () => shell.openExternal(`${currentSite.admin_url}/deploys`),
+      label: 'Overview'
+    },
+    {
+      enabled: false,
+      label: '—'
+    },
     ...pendingDeploys.map(mapDeployToMenuItem),
     ...(pendingDeploys.length ? [{ label: '—', enabled: false }] : []),
     ...doneDeploys.map(mapDeployToMenuItem)

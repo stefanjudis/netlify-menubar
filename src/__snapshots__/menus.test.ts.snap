@@ -21,6 +21,14 @@ exports[`menu helper functions getDeploysMenu should render a correct deploy men
 Array [
   Object {
     "click": [Function],
+    "label": "Overview",
+  },
+  Object {
+    "enabled": false,
+    "label": "—",
+  },
+  Object {
+    "click": [Function],
     "label": "production: building → master | 3 months ago in 123s",
   },
   Object {
