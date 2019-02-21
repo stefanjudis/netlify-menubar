@@ -29,7 +29,7 @@ Array [
   },
   Object {
     "click": [Function],
-    "label": "production: building → master | 3 months ago in 123s",
+    "label": "production: building → master | less than a minute ago in 123s",
   },
   Object {
     "enabled": false,
@@ -37,7 +37,7 @@ Array [
   },
   Object {
     "click": [Function],
-    "label": "production: ready → master | 3 months ago in 126s",
+    "label": "production: ready → master | 1 day ago in 126s",
   },
 ]
 `;

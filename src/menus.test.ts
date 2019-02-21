@@ -25,6 +25,13 @@ describe('menu helper functions', () => {
 
   describe('getDeploysMenu', () => {
     test('should render a correct deploy menu', () => {
+      const getToday = () => new Date();
+      const getYday = () => {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        return d;
+      };
+
       const result = getDeploysMenu({
         currentSite: {
           admin_url: 'https://foo-admin.com',
@@ -37,7 +44,7 @@ describe('menu helper functions', () => {
             {
               branch: 'master',
               context: 'production',
-              created_at: '2018-11-09',
+              created_at: getToday().toISOString(),
               deploy_time: '123',
               error_message: '',
               id: '2',
@@ -48,7 +55,7 @@ describe('menu helper functions', () => {
             {
               branch: 'master',
               context: 'production',
-              created_at: '2018-11-08',
+              created_at: getYday().toISOString(),
               deploy_time: '126',
               error_message: '',
               id: '1',
