@@ -98,3 +98,11 @@ export const getSuspendedDeployCount = (deployCount: number): string => {
     return '';
   }
 };
+
+// shorten strings without splitting the last word
+export const shortenString = (str: string, maxLen: number) => {
+  if (str.length <= maxLen) {
+    return str;
+  }
+  return str.substr(0, str.lastIndexOf(' ', maxLen));
+};

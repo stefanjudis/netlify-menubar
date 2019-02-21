@@ -1,13 +1,56 @@
-import { distanceInWords } from 'date-fns';
+import { distanceInWords, isWithinRange, subMonths } from 'date-fns';
 import { MenuItemConstructorOptions, shell } from 'electron'; // tslint:disable-line no-implicit-dependencies
+import IncidentFeed from './incidentFeed';
 import { IAppDeploys, IAppSettings } from './menubar';
 import { INetlifySite } from './netlify';
+import { shortenString } from './util';
 
 interface IDeployMenuOptions {
   currentSite: INetlifySite;
   deploys: IAppDeploys;
   onItemClick: (deployId: string) => void;
 }
+
+export const getIncidentsMenu = (
+  incidentFeed: IncidentFeed
+): MenuItemConstructorOptions[] => {
+  const recentIncidents = incidentFeed
+    .getFeed()
+    // remove incidents in distant past
+    .filter(incident => {
+      const pubDate = new Date(incident.pubDate);
+      const today = new Date();
+      const aMonthAgo = subMonths(today, 1);
+      return isWithinRange(pubDate, aMonthAgo, today);
+    })
+    // create menu option objects from incidents
+    .map(incident => {
+      return {
+        click: () => shell.openExternal(incident.link),
+        label: `${shortenString(incident.title, 60)} | ${distanceInWords(
+          new Date(incident.pubDate),
+          new Date()
+        )} ago`
+      };
+    });
+  // if there are no recent incidents, replace with message
+  const renderedItems = recentIncidents.length
+    ? recentIncidents
+    : [
+        {
+          enabled: false,
+          label: 'no recent incidents'
+        }
+      ];
+  return [
+    {
+      click: () => shell.openExternal('https://www.netlifystatus.com/history'),
+      label: 'History'
+    },
+    { type: 'separator' },
+    ...renderedItems
+  ];
+};
 
 export const getDeploysMenu = ({
   currentSite,

@@ -11,7 +11,13 @@ import { EventEmitter } from 'events';
 import { POLL_DURATIONS } from './config';
 import Connection from './connection';
 import ICONS from './icons';
-import { getCheckboxMenu, getDeploysMenu, getSitesMenu } from './menus';
+import IncidentFeed from './incidentFeed';
+import {
+  getCheckboxMenu,
+  getDeploysMenu,
+  getIncidentsMenu,
+  getSitesMenu
+} from './menus';
 import Netlify, { INetlifyDeploy, INetlifySite, INetlifyUser } from './netlify';
 import {
   getFormattedDeploys,
@@ -60,6 +66,7 @@ const DEFAULT_SETTINGS: IAppSettings = {
 
 export default class UI extends EventEmitter {
   private apiClient: Netlify;
+  private incidentFeed: IncidentFeed;
   private connection: Connection;
   private state: IAppState;
   private tray: Tray;
@@ -68,13 +75,16 @@ export default class UI extends EventEmitter {
 
   public constructor({
     apiClient,
-    connection
+    connection,
+    incidentFeed
   }: {
     apiClient: Netlify;
     connection: Connection;
+    incidentFeed: IncidentFeed;
   }) {
     super();
 
+    this.incidentFeed = incidentFeed;
     this.tray = new Tray(ICONS.loading);
     this.apiClient = apiClient;
     this.connection = connection;
@@ -94,6 +104,10 @@ export default class UI extends EventEmitter {
       previousDeploy: null,
       updateAvailable: false
     };
+
+    this.incidentFeed.on('update', () => {
+      this.render();
+    });
 
     this.setup().then(() => {
       const repeat = () => {
@@ -358,6 +372,11 @@ export default class UI extends EventEmitter {
             )
           }
         ]
+      },
+      { type: 'separator' },
+      {
+        label: 'Reported Incidents',
+        submenu: getIncidentsMenu(this.incidentFeed)
       },
       { type: 'separator' },
       {
