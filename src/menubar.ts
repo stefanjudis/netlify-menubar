@@ -1,11 +1,4 @@
-import {
-  app,
-  Menu,
-  MenuItemConstructorOptions,
-  Notification,
-  shell,
-  Tray
-} from 'electron'; // tslint:disable-line no-implicit-dependencies
+import { app, Menu, MenuItemConstructorOptions, shell, Tray } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import settings from 'electron-settings';
 import { EventEmitter } from 'events';
 import { POLL_DURATIONS } from './config';
@@ -19,6 +12,7 @@ import {
   getSitesMenu
 } from './menus';
 import Netlify, { INetlifyDeploy, INetlifySite, INetlifyUser } from './netlify';
+import notify from './notify';
 import {
   getFormattedDeploys,
   getNotificationOptions,
@@ -219,16 +213,14 @@ export default class UI extends EventEmitter {
       return;
     }
 
-    if (this.settings.showNotifications && previousDeploy) {
+    if (previousDeploy) {
       const notificationOptions = getNotificationOptions(
         previousDeploy,
         currentDeploy
       );
 
       if (notificationOptions) {
-        const notification = new Notification(notificationOptions);
-
-        notification.on('click', event => {
+        notify(notificationOptions, () => {
           if (currentSite && currentDeploy) {
             shell.openExternal(
               `https://app.netlify.com/sites/${currentSite.name}/deploys/${
@@ -237,14 +229,6 @@ export default class UI extends EventEmitter {
             );
           }
         });
-
-        // notifications with an attached click handler
-        // won't disappear by itself
-        // -> close it after certain timeframe automatically
-        notification.on('show', () =>
-          setTimeout(() => notification.close(), 4000)
-        );
-        notification.show();
       }
     }
 

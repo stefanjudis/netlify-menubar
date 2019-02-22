@@ -1,8 +1,8 @@
 import { isToday, isYesterday } from 'date-fns';
-import { Notification, shell } from 'electron'; // tslint:disable-line no-implicit-dependencies
-import settings from 'electron-settings';
+import { shell } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import { EventEmitter } from 'events';
 import Parser from 'rss-parser';
+import notify from './notify';
 
 const FEED_URL = 'https://www.netlifystatus.com/history.rss';
 
@@ -41,11 +41,15 @@ export default class IncidentFeed extends EventEmitter {
                 return isToday(publicationDate) || isYesterday(publicationDate);
               });
               recentIncidents.forEach(item => {
-                this.notify({
-                  body: item.title,
-                  link: item.link,
-                  title: 'Recently reported incident'
-                });
+                notify(
+                  {
+                    body: item.title,
+                    title: 'Recently reported incident'
+                  },
+                  () => {
+                    shell.openExternal(item.link);
+                  }
+                );
               });
               isInitialFetch = false;
             } else {
@@ -53,18 +57,26 @@ export default class IncidentFeed extends EventEmitter {
               const newItems = this.findNewItems(fetchedFeed);
               const updatedItems = this.findUpdatedItems(fetchedFeed);
               newItems.forEach(item => {
-                this.notify({
-                  body: item.title,
-                  link: item.link,
-                  title: 'New incident reported'
-                });
+                notify(
+                  {
+                    body: item.title,
+                    title: 'New incident reported'
+                  },
+                  () => {
+                    shell.openExternal(item.link);
+                  }
+                );
               });
               updatedItems.forEach(item => {
-                this.notify({
-                  body: item.title,
-                  link: item.link,
-                  title: 'Incident updated'
-                });
+                notify(
+                  {
+                    body: item.title,
+                    title: 'Incident updated'
+                  },
+                  () => {
+                    shell.openExternal(item.link);
+                  }
+                );
               });
               this.feed = fetchedFeed;
             }
@@ -80,27 +92,6 @@ export default class IncidentFeed extends EventEmitter {
 
   public getFeed(): ReadonlyArray<IFeedItem> {
     return this.feed as ReadonlyArray<IFeedItem>;
-  }
-
-  private notify({ body, title, link }): void {
-    if (settings.get('showNotifications')) {
-      const notification = new Notification({
-        body,
-        title
-      });
-
-      notification.on('click', () => {
-        shell.openExternal(link);
-      });
-
-      // notifications with an attached click handler
-      // won't disappear by itself
-      // -> close it after certain timeframe automatically
-      notification.on('show', () =>
-        setTimeout(() => notification.close(), 4000)
-      );
-      notification.show();
-    }
   }
 
   private async fetchAndParseFeed(): Promise<IFeedItem[]> {
