@@ -12,13 +12,10 @@ describe('notify function', () => {
     expect(mockGet.mock.results[0].value).toEqual(false);
   });
   test('if showNotifications is set to true, it creates a notification then calls notification.show', () => {
-    const Notification = electron.Notification as any;
-    const mockShow = jest.fn();
-    Notification.prototype.on = jest.fn();
-    Notification.prototype.show = mockShow;
     const mockGet = settings.get as jest.Mock; // otherwise ts doesn't think get has :mockImplementation
+    const mockElectron = electron as any;
     mockGet.mockImplementation(() => true);
     notify({ title: 'test title', body: 'test body' }, jest.fn());
-    expect(mockShow).toHaveBeenCalled();
+    expect(mockElectron.mockShow).toHaveBeenCalled();
   });
 });
