@@ -40,17 +40,17 @@ export default class IncidentFeed extends EventEmitter {
                 const publicationDate = new Date(item.pubDate);
                 return isToday(publicationDate) || isYesterday(publicationDate);
               });
-              recentIncidents.forEach(item => {
+              if (recentIncidents.length) {
                 notify(
                   {
-                    body: item.title,
+                    body: recentIncidents[0].title,
                     title: 'Recently reported incident'
                   },
                   () => {
-                    shell.openExternal(item.link);
+                    shell.openExternal(recentIncidents[0].link);
                   }
                 );
-              });
+              }
               isInitialFetch = false;
             } else {
               // on subsequestion fetches, notify on new or updated incidents
