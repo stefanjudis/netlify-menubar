@@ -1,3 +1,4 @@
+import { isToday, isYesterday } from 'date-fns';
 import { app, Menu, MenuItemConstructorOptions, shell, Tray } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import settings from 'electron-settings';
 import { EventEmitter } from 'events';
@@ -101,13 +102,20 @@ export default class UI extends EventEmitter {
 
     // TODO: move this to a dedicated Scheduler
     this.setup().then(() => {
+      // Scheduler should have some method like: doOnce()
+      let first = true;
       const repeat = () => {
         setTimeout(async () => {
           if (this.connection.isOnline) {
             await this.updateDeploys();
             // every 10 seconds is probably too frequent to be checking the incidents rss
             // incident feed should get its own polling interval when Scheduler is implemented
-            this.incidentFeed.update();
+            await this.incidentFeed.update();
+            if (first) {
+              first = false;
+              this.notifyForIncidentsPastTwoDays();
+            }
+            this.notifyForNewAndUpdatedIncidents();
           } else {
             this.tray.setImage(ICONS.offline);
             await this.render();
@@ -116,7 +124,6 @@ export default class UI extends EventEmitter {
           repeat();
         }, this.settings.pollInterval);
       };
-
       repeat();
     });
   }
@@ -165,7 +172,6 @@ export default class UI extends EventEmitter {
   private async fetchData(fn: () => void): Promise<void> {
     if (this.connection.isOnline) {
       this.tray.setImage(ICONS.loading);
-
       // catch possible network hickups
       try {
         await fn();
@@ -193,6 +199,51 @@ export default class UI extends EventEmitter {
         this.netlifyData.deploys = getFormattedDeploys(deploys);
       }
     });
+  }
+
+  private notifyForIncidentsPastTwoDays(): void {
+    const recentIncidents = this.incidentFeed.getFeed().filter(item => {
+      const publicationDate = new Date(item.pubDate);
+      return isToday(publicationDate) || isYesterday(publicationDate);
+    });
+    if (recentIncidents.length) {
+      notify(
+        {
+          body: recentIncidents[0].title,
+          title: 'Recently reported incident'
+        },
+        () => {
+          shell.openExternal(recentIncidents[0].link);
+        }
+      );
+    }
+  }
+
+  private notifyForNewAndUpdatedIncidents(): void {
+    const newIncidents = this.incidentFeed.newIncidents();
+    const updatedIncidents = this.incidentFeed.updatedIncidents();
+    if (newIncidents.length) {
+      notify(
+        {
+          body: newIncidents[0].title,
+          title: 'New incident reported'
+        },
+        () => {
+          shell.openExternal(newIncidents[0].link);
+        }
+      );
+    }
+    if (updatedIncidents.length) {
+      notify(
+        {
+          body: updatedIncidents[0].title,
+          title: 'Incident reported updated'
+        },
+        () => {
+          shell.openExternal(updatedIncidents[0].link);
+        }
+      );
+    }
   }
 
   private evaluateDeployState(): void {
