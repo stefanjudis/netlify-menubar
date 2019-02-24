@@ -1,23 +1,38 @@
-import * as electron from 'electron'; // tslint:disable-line no-implicit-dependencies
-import settings from 'electron-settings';
+const mockGetSettings = jest.fn();
+const mockOn = jest.fn();
+const mockShow = jest.fn();
+const inMockConstructor = jest.fn();
+class Notification {
+  public on = mockOn;
+  public show = mockShow;
+  constructor() {
+    inMockConstructor();
+  }
+}
+/* doMock instead of mock to prevent hoisting above class and const declarations*/
+jest.doMock('electron', () => ({
+  Notification
+}));
+jest.doMock('electron-settings', () => ({
+  get: mockGetSettings
+}));
+
+// this import must come after jest.doMock(...
 import notify from './notify';
-jest.mock('electron-settings');
-const mockElectron = electron as any;
-const mockGet = settings.get as jest.Mock; // otherwise ts doesn't think get has :mockImplementation
 
 describe('notify function', () => {
   test('if showNotifications setting is false, does not create a Notification ', () => {
-    mockGet.mockImplementation(() => false); // getting any setting will return false
+    mockGetSettings.mockImplementation(() => false); // getting any setting will return false
     notify({ title: 'test title', body: 'test body' }, jest.fn());
-    expect(mockGet).toHaveBeenCalledWith('showNotifications');
-    expect(mockGet.mock.results[0].value).toEqual(false);
-    expect(mockElectron.inMockConstructor).not.toHaveBeenCalled();
+    expect(mockGetSettings).toHaveBeenCalledWith('showNotifications');
+    expect(mockGetSettings.mock.results[0].value).toEqual(false);
+    expect(inMockConstructor).not.toHaveBeenCalled();
   });
   test('if showNotifications setting is true, it creates a Notification, registers callbacks, calls notifation.show()', () => {
-    mockGet.mockImplementation(() => true);
+    mockGetSettings.mockImplementation(() => true);
     notify({ title: 'test title', body: 'test body' }, jest.fn());
-    expect(mockElectron.inMockConstructor).toHaveBeenCalled();
-    expect(mockElectron.mockOn).toHaveBeenCalledTimes(2);
-    expect(mockElectron.mockShow).toHaveBeenCalled();
+    expect(inMockConstructor).toHaveBeenCalled();
+    expect(mockOn).toHaveBeenCalledTimes(2);
+    expect(mockShow).toHaveBeenCalled();
   });
 });
