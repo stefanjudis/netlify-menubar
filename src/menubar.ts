@@ -99,15 +99,15 @@ export default class UI extends EventEmitter {
       updateAvailable: false
     };
 
-    this.incidentFeed.on('update', () => {
-      this.render();
-    });
-
+    // TODO: move this to a dedicated Scheduler
     this.setup().then(() => {
       const repeat = () => {
         setTimeout(async () => {
           if (this.connection.isOnline) {
             await this.updateDeploys();
+            // every 10 seconds is probably too frequent to be checking the incidents rss
+            // incident feed should get its own polling interval when Scheduler is implemented
+            this.incidentFeed.update();
           } else {
             this.tray.setImage(ICONS.offline);
             await this.render();

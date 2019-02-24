@@ -13,81 +13,66 @@ interface IFeedItem {
   link: string;
 }
 
-interface IConnection {
-  isOnline: boolean;
-}
-
-export default class IncidentFeed extends EventEmitter {
+export default class IncidentFeed {
   private parser: { parseURL(feedUrl: string) };
   private feed: IFeedItem[];
+  private isInitialFetch: boolean;
 
-  constructor(connection: IConnection) {
-    super();
+  constructor() {
     this.parser = new Parser();
     this.feed = [];
-    let isInitialFetch = true;
+    this.isInitialFetch = true;
+  }
 
-    // main update loop for checking Netlify Incidents RSS
-    const repeat = () => {
-      setTimeout(
-        async () => {
-          if (connection.isOnline) {
-            const fetchedFeed: IFeedItem[] = await this.fetchAndParseFeed();
-            // on the first fetch, kee notify about any very recent updates...
-            if (isInitialFetch) {
-              this.feed = fetchedFeed;
-              const recentIncidents = this.feed.filter(item => {
-                const publicationDate = new Date(item.pubDate);
-                return isToday(publicationDate) || isYesterday(publicationDate);
-              });
-              if (recentIncidents.length) {
-                notify(
-                  {
-                    body: recentIncidents[0].title,
-                    title: 'Recently reported incident'
-                  },
-                  () => {
-                    shell.openExternal(recentIncidents[0].link);
-                  }
-                );
-              }
-              isInitialFetch = false;
-            } else {
-              // on subsequestion fetches, notify on new or updated incidents
-              const newItems = this.findNewItems(fetchedFeed);
-              const updatedItems = this.findUpdatedItems(fetchedFeed);
-              newItems.forEach(item => {
-                notify(
-                  {
-                    body: item.title,
-                    title: 'New incident reported'
-                  },
-                  () => {
-                    shell.openExternal(item.link);
-                  }
-                );
-              });
-              updatedItems.forEach(item => {
-                notify(
-                  {
-                    body: item.title,
-                    title: 'Incident updated'
-                  },
-                  () => {
-                    shell.openExternal(item.link);
-                  }
-                );
-              });
-              this.feed = fetchedFeed;
-            }
+  public async update(): Promise<any> {
+    const fetchedFeed: IFeedItem[] = await this.fetchAndParseFeed();
+    // on the first fetch, notify about any very recent updates...
+    if (this.isInitialFetch) {
+      this.feed = fetchedFeed;
+      const recentIncidents = this.feed.filter(item => {
+        const publicationDate = new Date(item.pubDate);
+        return isToday(publicationDate) || isYesterday(publicationDate);
+      });
+      if (recentIncidents.length) {
+        notify(
+          {
+            body: recentIncidents[0].title,
+            title: 'Recently reported incident'
+          },
+          () => {
+            shell.openExternal(recentIncidents[0].link);
           }
-          repeat();
-        },
-        // recheck connection every second, then poll every minute after initial fetch
-        isInitialFetch ? 1000 : 60000
-      );
-    };
-    repeat();
+        );
+      }
+      this.isInitialFetch = false;
+    } else {
+      // on subsequestion fetches, notify on new or updated incidents
+      const newItems = this.findNewItems(fetchedFeed);
+      const updatedItems = this.findUpdatedItems(fetchedFeed);
+      newItems.forEach(item => {
+        notify(
+          {
+            body: item.title,
+            title: 'New incident reported'
+          },
+          () => {
+            shell.openExternal(item.link);
+          }
+        );
+      });
+      updatedItems.forEach(item => {
+        notify(
+          {
+            body: item.title,
+            title: 'Incident updated'
+          },
+          () => {
+            shell.openExternal(item.link);
+          }
+        );
+      });
+      this.feed = fetchedFeed;
+    }
   }
 
   public getFeed(): ReadonlyArray<IFeedItem> {

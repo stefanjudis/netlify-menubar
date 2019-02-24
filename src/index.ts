@@ -45,7 +45,7 @@ const configureAutoLauncher = (
  */
 const onAppReady = async (): Promise<void> => {
   const connection = await getOnlineConnection();
-  const incidentFeed = new IncidentFeed(connection);
+  const incidentFeed = new IncidentFeed();
   const apiClient = await getNetlifyClient(settings.get(
     'accessToken'
   ) as string);
