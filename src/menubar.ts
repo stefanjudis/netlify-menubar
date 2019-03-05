@@ -318,6 +318,11 @@ export default class UI extends EventEmitter {
       },
       { type: 'separator' },
       {
+        label: 'Reported Incidents',
+        submenu: getIncidentsMenu(this.incidentFeed)
+      },
+      { type: 'separator' },
+      {
         enabled: false,
         label: user && user.email
       },
@@ -398,11 +403,6 @@ export default class UI extends EventEmitter {
             )
           }
         ]
-      },
-      { type: 'separator' },
-      {
-        label: 'Reported Incidents',
-        submenu: getIncidentsMenu(this.incidentFeed)
       },
       { type: 'separator' },
       {
