@@ -207,15 +207,7 @@ export default class UI extends EventEmitter {
       return isToday(publicationDate) || isYesterday(publicationDate);
     });
     if (recentIncidents.length) {
-      notify(
-        {
-          body: recentIncidents[0].title,
-          title: 'Recently reported incident'
-        },
-        () => {
-          shell.openExternal(recentIncidents[0].link);
-        }
-      );
+      this.notifyIncident(recentIncidents[0], 'Recently reported incident');
     }
   }
 
@@ -223,27 +215,26 @@ export default class UI extends EventEmitter {
     const newIncidents = this.incidentFeed.newIncidents();
     const updatedIncidents = this.incidentFeed.updatedIncidents();
     if (newIncidents.length) {
-      notify(
-        {
-          body: newIncidents[0].title,
-          title: 'New incident reported'
-        },
-        () => {
-          shell.openExternal(newIncidents[0].link);
-        }
-      );
+      this.notifyIncident(newIncidents[0], 'New incident reported');
     }
     if (updatedIncidents.length) {
-      notify(
-        {
-          body: updatedIncidents[0].title,
-          title: 'Incident reported updated'
-        },
-        () => {
-          shell.openExternal(updatedIncidents[0].link);
-        }
-      );
+      this.notifyIncident(updatedIncidents[0], 'Incident report updated');
     }
+  }
+
+  private notifyIncident(
+    incident: { title: string; link: string },
+    title: string
+  ): void {
+    notify(
+      {
+        body: incident.title,
+        title
+      },
+      () => {
+        shell.openExternal(incident.link);
+      }
+    );
   }
 
   private evaluateDeployState(): void {

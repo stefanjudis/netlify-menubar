@@ -26,7 +26,7 @@ export default class IncidentFeed {
     this.currentFeed = fetchedFeed;
   }
 
-  public newIncidents() {
+  public newIncidents(): ReadonlyArray<IFeedItem> {
     if (this.previousFeed.length === 0) {
       return [];
     }
@@ -37,7 +37,7 @@ export default class IncidentFeed {
     });
   }
 
-  public updatedIncidents() {
+  public updatedIncidents(): ReadonlyArray<IFeedItem> {
     return this.currentFeed.filter(currentItem => {
       return this.previousFeed.find(previousItem => {
         return (
