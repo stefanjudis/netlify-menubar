@@ -2,7 +2,7 @@ import Parser from 'rss-parser';
 
 const FEED_URL = 'https://www.netlifystatus.com/history.rss';
 
-interface IFeedItem {
+export interface IFeedItem {
   title: string;
   pubDate: string;
   content: string;
