@@ -226,15 +226,13 @@ export default class UI extends EventEmitter {
     incident: { title: string; link: string },
     title: string
   ): void {
-    notify(
-      {
-        body: incident.title,
-        title
-      },
-      () => {
+    notify({
+      body: incident.title,
+      onClick: () => {
         shell.openExternal(incident.link);
-      }
-    );
+      },
+      title
+    });
   }
 
   private evaluateDeployState(): void {
@@ -262,13 +260,16 @@ export default class UI extends EventEmitter {
       );
 
       if (notificationOptions) {
-        notify(notificationOptions, () => {
-          if (currentSite && currentDeploy) {
-            shell.openExternal(
-              `https://app.netlify.com/sites/${currentSite.name}/deploys/${
-                currentDeploy.id
-              }`
-            );
+        notify({
+          ...notificationOptions,
+          onClick: () => {
+            if (currentSite && currentDeploy) {
+              shell.openExternal(
+                `https://app.netlify.com/sites/${currentSite.name}/deploys/${
+                  currentDeploy.id
+                }`
+              );
+            }
           }
         });
       }
