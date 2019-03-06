@@ -1,6 +1,6 @@
 import { distanceInWords, isWithinRange, subMonths } from 'date-fns';
 import { MenuItemConstructorOptions, shell } from 'electron'; // tslint:disable-line no-implicit-dependencies
-import IncidentFeed from './incidentFeed';
+import IncidentFeed, { IFeedItem } from './incidentFeed';
 import { IAppDeploys, IAppSettings } from './menubar';
 import { INetlifySite } from './netlify';
 import { shortenString } from './util';
@@ -11,18 +11,19 @@ interface IDeployMenuOptions {
   onItemClick: (deployId: string) => void;
 }
 
+const isOlderThanAMonth = (incident: IFeedItem): boolean => {
+  const pubDate = new Date(incident.pubDate);
+  const today = new Date();
+  const aMonthAgo = subMonths(today, 1);
+  return isWithinRange(pubDate, aMonthAgo, today);
+};
+
 export const getIncidentsMenu = (
   incidentFeed: IncidentFeed
 ): MenuItemConstructorOptions[] => {
   const recentIncidents = incidentFeed
     .getFeed()
-    // remove incidents in distant past
-    .filter(incident => {
-      const pubDate = new Date(incident.pubDate);
-      const today = new Date();
-      const aMonthAgo = subMonths(today, 1);
-      return isWithinRange(pubDate, aMonthAgo, today);
-    })
+    .filter(isOlderThanAMonth)
     // create menu option objects from incidents
     .map(incident => {
       return {

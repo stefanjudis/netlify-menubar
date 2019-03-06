@@ -46,9 +46,9 @@ import IncidentFeed from './incidentFeed';
 const incidentFeed = new IncidentFeed();
 
 describe('IncidentFeed', () => {
-  test(':getFeed returns current feed without fetching and parsing an update', () => {
+  test('before :update is called, :getFeed returns an empty array', () => {
     expect(incidentFeed.getFeed()).toMatchObject([]);
-    expect(incidentFeed.getFeed()).not.toMatchObject(['somee value']);
+    expect(incidentFeed.getFeed()).not.toMatchObject(['some value']);
   });
   test('first update', async () => {
     await incidentFeed.update();
