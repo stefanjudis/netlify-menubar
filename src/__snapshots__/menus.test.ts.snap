@@ -24,8 +24,7 @@ Array [
     "label": "Overview",
   },
   Object {
-    "enabled": false,
-    "label": "————",
+    "type": "separator",
   },
   Object {
     "click": [Function],

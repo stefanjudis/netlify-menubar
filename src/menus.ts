@@ -18,6 +18,8 @@ const isOlderThanAMonth = (incident: IFeedItem): boolean => {
   return isWithinRange(pubDate, aMonthAgo, today);
 };
 
+const SEPARATOR: MenuItemConstructorOptions = { type: 'separator' };
+
 export const getIncidentsMenu = (
   incidentFeed: IncidentFeed
 ): MenuItemConstructorOptions[] => {
@@ -48,7 +50,7 @@ export const getIncidentsMenu = (
       click: () => shell.openExternal('https://www.netlifystatus.com/history'),
       label: 'History'
     },
-    { type: 'separator' },
+    SEPARATOR,
     ...renderedItems
   ];
 };
@@ -81,10 +83,7 @@ export const getDeploysMenu = ({
       click: () => shell.openExternal(`${currentSite.admin_url}/deploys`),
       label: 'Overview'
     },
-    {
-      enabled: false,
-      label: '————'
-    },
+    SEPARATOR,
     ...pendingDeploys.map(mapDeployToMenuItem),
     ...(pendingDeploys.length ? [{ label: '—', enabled: false }] : []),
     ...doneDeploys.map(mapDeployToMenuItem)
