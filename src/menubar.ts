@@ -1,18 +1,19 @@
-import {
-  app,
-  Menu,
-  MenuItemConstructorOptions,
-  Notification,
-  shell,
-  Tray
-} from 'electron'; // tslint:disable-line no-implicit-dependencies
+import { isToday, isYesterday } from 'date-fns';
+import { app, Menu, MenuItemConstructorOptions, shell, Tray } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import settings from 'electron-settings';
 import { EventEmitter } from 'events';
 import { POLL_DURATIONS } from './config';
 import Connection from './connection';
 import ICONS from './icons';
-import { getCheckboxMenu, getDeploysMenu, getSitesMenu } from './menus';
+import IncidentFeed from './incidentFeed';
+import {
+  getCheckboxMenu,
+  getDeploysMenu,
+  getIncidentsMenu,
+  getSitesMenu
+} from './menus';
 import Netlify, { INetlifyDeploy, INetlifySite, INetlifyUser } from './netlify';
+import notify from './notify';
 import {
   getFormattedDeploys,
   getNotificationOptions,
@@ -60,6 +61,7 @@ const DEFAULT_SETTINGS: IAppSettings = {
 
 export default class UI extends EventEmitter {
   private apiClient: Netlify;
+  private incidentFeed: IncidentFeed;
   private connection: Connection;
   private state: IAppState;
   private tray: Tray;
@@ -68,13 +70,16 @@ export default class UI extends EventEmitter {
 
   public constructor({
     apiClient,
-    connection
+    connection,
+    incidentFeed
   }: {
     apiClient: Netlify;
     connection: Connection;
+    incidentFeed: IncidentFeed;
   }) {
     super();
 
+    this.incidentFeed = incidentFeed;
     this.tray = new Tray(ICONS.loading);
     this.apiClient = apiClient;
     this.connection = connection;
@@ -95,11 +100,22 @@ export default class UI extends EventEmitter {
       updateAvailable: false
     };
 
+    // TODO: move this to a dedicated Scheduler
     this.setup().then(() => {
+      // Scheduler should have some method like: doOnce()
+      let first = true;
       const repeat = () => {
         setTimeout(async () => {
           if (this.connection.isOnline) {
             await this.updateDeploys();
+            // every 10 seconds is probably too frequent to be checking the incidents rss
+            // incident feed should get its own polling interval when Scheduler is implemented
+            await this.incidentFeed.update();
+            if (first) {
+              first = false;
+              this.notifyForIncidentsPastTwoDays();
+            }
+            this.notifyForNewAndUpdatedIncidents();
           } else {
             this.tray.setImage(ICONS.offline);
             await this.render();
@@ -108,7 +124,6 @@ export default class UI extends EventEmitter {
           repeat();
         }, this.settings.pollInterval);
       };
-
       repeat();
     });
   }
@@ -157,7 +172,6 @@ export default class UI extends EventEmitter {
   private async fetchData(fn: () => void): Promise<void> {
     if (this.connection.isOnline) {
       this.tray.setImage(ICONS.loading);
-
       // catch possible network hickups
       try {
         await fn();
@@ -187,6 +201,40 @@ export default class UI extends EventEmitter {
     });
   }
 
+  private notifyForIncidentsPastTwoDays(): void {
+    const recentIncidents = this.incidentFeed.getFeed().filter(item => {
+      const publicationDate = new Date(item.pubDate);
+      return isToday(publicationDate) || isYesterday(publicationDate);
+    });
+    if (recentIncidents.length) {
+      this.notifyIncident(recentIncidents[0], 'Recently reported incident');
+    }
+  }
+
+  private notifyForNewAndUpdatedIncidents(): void {
+    const newIncidents = this.incidentFeed.newIncidents();
+    const updatedIncidents = this.incidentFeed.updatedIncidents();
+    if (newIncidents.length) {
+      this.notifyIncident(newIncidents[0], 'New incident reported');
+    }
+    if (updatedIncidents.length) {
+      this.notifyIncident(updatedIncidents[0], 'Incident report updated');
+    }
+  }
+
+  private notifyIncident(
+    incident: { title: string; link: string },
+    title: string
+  ): void {
+    notify({
+      body: incident.title,
+      onClick: () => {
+        shell.openExternal(incident.link);
+      },
+      title
+    });
+  }
+
   private evaluateDeployState(): void {
     const { deploys } = this.netlifyData;
     const { previousDeploy, currentSite } = this.state;
@@ -205,32 +253,25 @@ export default class UI extends EventEmitter {
       return;
     }
 
-    if (this.settings.showNotifications && previousDeploy) {
+    if (previousDeploy) {
       const notificationOptions = getNotificationOptions(
         previousDeploy,
         currentDeploy
       );
 
       if (notificationOptions) {
-        const notification = new Notification(notificationOptions);
-
-        notification.on('click', event => {
-          if (currentSite && currentDeploy) {
-            shell.openExternal(
-              `https://app.netlify.com/sites/${currentSite.name}/deploys/${
-                currentDeploy.id
-              }`
-            );
+        notify({
+          ...notificationOptions,
+          onClick: () => {
+            if (currentSite && currentDeploy) {
+              shell.openExternal(
+                `https://app.netlify.com/sites/${currentSite.name}/deploys/${
+                  currentDeploy.id
+                }`
+              );
+            }
           }
         });
-
-        // notifications with an attached click handler
-        // won't disappear by itself
-        // -> close it after certain timeframe automatically
-        notification.on('show', () =>
-          setTimeout(() => notification.close(), 4000)
-        );
-        notification.show();
       }
     }
 
@@ -275,6 +316,11 @@ export default class UI extends EventEmitter {
       {
         enabled: false,
         label: `Netlify Menubar ${app.getVersion()}`
+      },
+      { type: 'separator' },
+      {
+        label: 'Reported Incidents',
+        submenu: getIncidentsMenu(this.incidentFeed)
       },
       { type: 'separator' },
       {

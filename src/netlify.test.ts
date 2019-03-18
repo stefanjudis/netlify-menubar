@@ -1,4 +1,4 @@
-import * as fetch from 'node-fetch';
+const fetch = require('node-fetch').default; // tslint:disable-line no-var-requires
 import Netlify, { API_URL } from './netlify';
 
 // TODO place this in global config somehwere
@@ -20,17 +20,21 @@ interface IFetchResponse {
   json: () => {};
 }
 
-const getFetchPromise = (json: {} = {}, response: {} = {}): IFetchResponse => {
-  return {
+const getFetchPromise = async (
+  json: {} = {},
+  response: {} = {}
+): Promise<IFetchResponse> => {
+  const result = await {
     ...(response && response),
     json: () => new Promise(res => res(json))
   };
+  return result;
 };
 
 describe('netlify api client', () => {
   const apiToken = 'awesomeToken';
   let apiClient: Netlify;
-  const mFetch = fetch.default as jest.Mock<typeof fetch.default>;
+  const mFetch = fetch as jest.Mock<Promise<typeof fetch>>;
 
   beforeEach(() => {
     apiClient = new Netlify(apiToken);
@@ -120,12 +124,11 @@ describe('netlify api client', () => {
     test('invalid token', async () => {
       const newToken = 'yeah-awesome-token';
 
-      mFetch
-        .mockResolvedValueOnce(getFetchPromise({}, { status: 401 }))
-        .mockResolvedValueOnce(getFetchPromise({ id: 'ticketId' }))
-        .mockResolvedValueOnce(getFetchPromise({ authorized: false }))
-        .mockResolvedValueOnce(getFetchPromise({ authorized: true }))
-        .mockResolvedValueOnce(getFetchPromise({ access_token: newToken }));
+      mFetch.mockResolvedValueOnce(getFetchPromise({}, { status: 401 }));
+      mFetch.mockResolvedValueOnce(getFetchPromise({ id: 'ticketId' }));
+      mFetch.mockResolvedValueOnce(getFetchPromise({ authorized: false }));
+      mFetch.mockResolvedValueOnce(getFetchPromise({ authorized: true }));
+      mFetch.mockResolvedValueOnce(getFetchPromise({ access_token: newToken }));
 
       const client = await apiClient.authorize('clientId2');
 

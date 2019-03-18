@@ -3,6 +3,7 @@ import { app, powerMonitor } from 'electron'; // tslint:disable-line no-implicit
 import settings from 'electron-settings';
 import { autoUpdater } from 'electron-updater';
 import Connection from './connection';
+import IncidentFeed from './incidentFeed';
 import MenuUI from './menubar';
 import Netlify from './netlify';
 
@@ -44,6 +45,7 @@ const configureAutoLauncher = (
  */
 const onAppReady = async (): Promise<void> => {
   const connection = await getOnlineConnection();
+  const incidentFeed = new IncidentFeed();
   const apiClient = await getNetlifyClient(settings.get(
     'accessToken'
   ) as string);
@@ -64,7 +66,8 @@ const onAppReady = async (): Promise<void> => {
 
   const ui = new MenuUI({
     apiClient,
-    connection
+    connection,
+    incidentFeed
   });
 
   // only hide dock icon when everything's running
