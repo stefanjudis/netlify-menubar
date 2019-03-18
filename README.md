@@ -1,6 +1,6 @@
 # Netlify Menubar
 
-[![Build Status](https://travis-ci.org/stefanjudis/netlify-menubar.svg?branch=master)](https://travis-ci.org/stefanjudis/netlify-menubar) [![Recent release](https://img.shields.io/github/release/stefanjudis/netlify-menubar.svg)](https://github.com/stefanjudis/netlify-menubar/releases) [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors) [![codecov](https://codecov.io/gh/stefanjudis/netlify-menubar/branch/master/graph/badge.svg)](https://codecov.io/gh/stefanjudis/netlify-menubar)
+[![Build Status](https://travis-ci.org/stefanjudis/netlify-menubar.svg?branch=master)](https://travis-ci.org/stefanjudis/netlify-menubar) [![Recent release](https://img.shields.io/github/release/stefanjudis/netlify-menubar.svg)](https://github.com/stefanjudis/netlify-menubar/releases) [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors) [![codecov](https://codecov.io/gh/stefanjudis/netlify-menubar/branch/master/graph/badge.svg)](https://codecov.io/gh/stefanjudis/netlify-menubar)
 
 > See, monitor and controls builds from within your top menubar
 
@@ -36,8 +36,8 @@ Thanks goes to these wonderful people ([emoji key](https://github.com/all-contri
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore -->
-| [<img src="https://avatars2.githubusercontent.com/u/4260265?v=4" width="100px;" alt="Johnny Bell"/><br /><sub><b>Johnny Bell</b></sub>](http://johnnybell.io)<br />[💻](https://github.com/stefanjudis/netlify-menubar/commits?author=johnnyxbell "Code") | [<img src="https://avatars3.githubusercontent.com/u/7389358?v=4" width="100px;" alt="Vivian Guillen"/><br /><sub><b>Vivian Guillen</b></sub>](http://codequeen.io)<br />[💻](https://github.com/stefanjudis/netlify-menubar/commits?author=viviangb "Code") [🎨](#design-viviangb "Design") | [<img src="https://avatars2.githubusercontent.com/u/804683?v=4" width="100px;" alt="Mike Elsmore"/><br /><sub><b>Mike Elsmore</b></sub>](http://elsmore.me)<br />[💻](https://github.com/stefanjudis/netlify-menubar/commits?author=ukmadlz "Code") |
-| :---: | :---: | :---: |
+| [<img src="https://avatars2.githubusercontent.com/u/4260265?v=4" width="100px;" alt="Johnny Bell"/><br /><sub><b>Johnny Bell</b></sub>](http://johnnybell.io)<br />[💻](https://github.com/stefanjudis/netlify-menubar/commits?author=johnnyxbell "Code") | [<img src="https://avatars3.githubusercontent.com/u/7389358?v=4" width="100px;" alt="Vivian Guillen"/><br /><sub><b>Vivian Guillen</b></sub>](http://codequeen.io)<br />[💻](https://github.com/stefanjudis/netlify-menubar/commits?author=viviangb "Code") [🎨](#design-viviangb "Design") | [<img src="https://avatars2.githubusercontent.com/u/804683?v=4" width="100px;" alt="Mike Elsmore"/><br /><sub><b>Mike Elsmore</b></sub>](http://elsmore.me)<br />[💻](https://github.com/stefanjudis/netlify-menubar/commits?author=ukmadlz "Code") | [<img src="https://avatars2.githubusercontent.com/u/7673611?v=4" width="100px;" alt="Adam Watters"/><br /><sub><b>Adam Watters</b></sub>](http://adamwatters.nyc)<br />[💻](https://github.com/stefanjudis/netlify-menubar/commits?author=adamwatters "Code") |
+| :---: | :---: | :---: | :---: |
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
