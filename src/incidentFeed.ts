@@ -21,7 +21,9 @@ export default class IncidentFeed {
   }
 
   public async update(): Promise<any> {
+    console.log('FEED CALL'); // tslint:disable-line no-console
     const fetchedFeed: IFeedItem[] = await this.fetchAndParseFeed();
+    console.log('FEED CALL DONE'); // tslint:disable-line no-console
     this.previousFeed = this.currentFeed;
     this.currentFeed = fetchedFeed;
   }

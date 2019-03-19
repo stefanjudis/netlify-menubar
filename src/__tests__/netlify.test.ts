@@ -1,5 +1,5 @@
-const fetch = require('node-fetch').default; // tslint:disable-line no-var-requires
-import Netlify, { API_URL } from './netlify';
+import fetch from 'node-fetch';
+import Netlify, { API_URL } from '../netlify';
 
 // TODO place this in global config somehwere
 // tslint:disable-next-line
@@ -34,7 +34,7 @@ const getFetchPromise = async (
 describe('netlify api client', () => {
   const apiToken = 'awesomeToken';
   let apiClient: Netlify;
-  const mFetch = fetch as jest.Mock<Promise<typeof fetch>>;
+  const mFetch = (fetch as unknown) as jest.Mock<Promise<IFetchResponse>>;
 
   beforeEach(() => {
     apiClient = new Netlify(apiToken);

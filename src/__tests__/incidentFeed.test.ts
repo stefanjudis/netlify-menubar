@@ -26,6 +26,10 @@ const fourthResponse = {
   ]
 };
 
+// TODO place this in global config somehwere
+// tslint:disable-next-line
+console.log = () => {};
+
 jest.doMock(
   'rss-parser',
   () =>
@@ -42,7 +46,7 @@ jest.doMock(
     }
 );
 
-import IncidentFeed from './incidentFeed';
+import IncidentFeed from '../incidentFeed';
 const incidentFeed = new IncidentFeed();
 
 describe('IncidentFeed', () => {

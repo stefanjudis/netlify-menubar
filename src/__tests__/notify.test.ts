@@ -18,7 +18,7 @@ jest.doMock('electron-settings', () => ({
 }));
 
 // this import must come after jest.doMock(...
-import notify from './notify';
+import notify from '../notify';
 
 describe('notify function', () => {
   test('if showNotifications setting is false, does not create a Notification ', () => {

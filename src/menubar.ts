@@ -14,6 +14,7 @@ import {
 } from './menus';
 import Netlify, { INetlifyDeploy, INetlifySite, INetlifyUser } from './netlify';
 import notify from './notify';
+import scheduler from './scheduler';
 import {
   getFormattedDeploys,
   getNotificationOptions,
@@ -100,32 +101,7 @@ export default class UI extends EventEmitter {
       updateAvailable: false
     };
 
-    // TODO: move this to a dedicated Scheduler
-    this.setup().then(() => {
-      // Scheduler should have some method like: doOnce()
-      let first = true;
-      const repeat = () => {
-        setTimeout(async () => {
-          if (this.connection.isOnline) {
-            await this.updateDeploys();
-            // every 10 seconds is probably too frequent to be checking the incidents rss
-            // incident feed should get its own polling interval when Scheduler is implemented
-            await this.incidentFeed.update();
-            if (first) {
-              first = false;
-              this.notifyForIncidentsPastTwoDays();
-            }
-            this.notifyForNewAndUpdatedIncidents();
-          } else {
-            this.tray.setImage(ICONS.offline);
-            await this.render();
-            console.error('Currently offline, unable to get deploy updates.'); // tslint:disable-line no-console
-          }
-          repeat();
-        }, this.settings.pollInterval);
-      };
-      repeat();
-    });
+    this.setup().then(() => this.setupScheduler());
   }
 
   public setState(state: Partial<IAppState>) {
@@ -157,6 +133,39 @@ export default class UI extends EventEmitter {
     });
   }
 
+  private async setupScheduler(): Promise<void> {
+    scheduler.repeat([
+      {
+        fn: async () => {
+          await this.updateDeploys();
+        },
+        interval: this.settings.pollInterval
+      },
+      {
+        fn: async ({ isFirstRun }) => {
+          await this.updateFeed();
+          if (isFirstRun) {
+            this.notifyForIncidentsPastTwoDays();
+          } else {
+            this.notifyForNewAndUpdatedIncidents();
+          }
+        },
+        // going with a minute for now
+        interval: 60000
+      }
+    ]);
+
+    this.connection.on('status-changed', connection => {
+      if (connection.isOnline) {
+        scheduler.resume();
+      } else {
+        scheduler.stop();
+        console.error('Currently offline, unable to get updates...'); // tslint:disable-line no-console
+        this.tray.setImage(ICONS.offline);
+      }
+    });
+  }
+
   private getSite(siteId: string): INetlifySite {
     return (
       this.netlifyData.sites.find(({ id }) => id === siteId) ||
@@ -180,13 +189,18 @@ export default class UI extends EventEmitter {
           this.tray.setImage(ICONS[this.state.previousDeploy.state]);
         }
       } catch (e) {
+        console.error(e); // tslint:disable-line no-console
         this.tray.setImage(ICONS.offline);
       }
-    } else {
-      this.tray.setImage(ICONS.offline);
     }
 
     this.render();
+  }
+
+  private updateFeed(): Promise<void> {
+    return this.fetchData(async () => {
+      await this.incidentFeed.update();
+    });
   }
 
   private updateDeploys(): Promise<void> {

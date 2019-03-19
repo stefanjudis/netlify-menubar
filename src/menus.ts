@@ -71,10 +71,10 @@ export const getDeploysMenu = ({
   }) => {
     return {
       click: () => onItemClick(id),
-      label: `${context}: ${state} → ${branch} | ${distanceInWords(
+      label: `${context}: ${state} → ${branch} (${distanceInWords(
         new Date(created_at),
         new Date()
-      )} ago ${deploy_time ? `in ${deploy_time}s` : ''}`
+      )} ago ${deploy_time ? `in ${deploy_time}s` : ''})`
     };
   };
 

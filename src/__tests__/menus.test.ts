@@ -1,4 +1,4 @@
-import { getCheckboxMenu, getDeploysMenu, getSitesMenu } from './menus';
+import { getCheckboxMenu, getDeploysMenu, getSitesMenu } from '../menus';
 
 describe('menu helper functions', () => {
   describe('getCheckboxMenu', () => {
