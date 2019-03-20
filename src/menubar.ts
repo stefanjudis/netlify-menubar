@@ -29,6 +29,7 @@ interface IJsonArray extends Array<JsonValue> {} // tslint:disable-line no-empty
 type JsonValue = string | number | boolean | null | IJsonArray | IJsonObject;
 
 export interface IAppSettings {
+  updateAutomatically: boolean;
   launchAtStart: boolean;
   pollInterval: number;
   showNotifications: boolean;
@@ -57,7 +58,8 @@ const DEFAULT_SETTINGS: IAppSettings = {
   currentSiteId: null,
   launchAtStart: false,
   pollInterval: 10000,
-  showNotifications: false
+  showNotifications: false,
+  updateAutomatically: true
 };
 
 export default class UI extends EventEmitter {
@@ -400,6 +402,10 @@ export default class UI extends EventEmitter {
         submenu: [
           ...getCheckboxMenu({
             items: [
+              {
+                key: 'updateAutomatically',
+                label: 'Receive automatic updates'
+              },
               { key: 'launchAtStart', label: 'Launch at Start' },
               { key: 'showNotifications', label: 'Show notifications' }
             ],

@@ -74,14 +74,16 @@ const onAppReady = async (): Promise<void> => {
   // otherwise the auth prompt disappears in MacOS
   app.dock.hide();
 
-  autoUpdater.checkForUpdatesAndNotify();
-  autoUpdater.on('update-downloaded', () => {
-    ui.on('ready-to-update', () => autoUpdater.quitAndInstall());
-    ui.setState({ updateAvailable: true });
-  });
-  powerMonitor.on('unlock-screen', () =>
-    autoUpdater.checkForUpdatesAndNotify()
-  );
+  if (settings.get('updateAutomatically')) {
+    autoUpdater.checkForUpdatesAndNotify();
+    autoUpdater.on('update-downloaded', () => {
+      ui.on('ready-to-update', () => autoUpdater.quitAndInstall());
+      ui.setState({ updateAvailable: true });
+    });
+    powerMonitor.on('unlock-screen', () =>
+      autoUpdater.checkForUpdatesAndNotify()
+    );
+  }
 };
 
 export const start = () => {

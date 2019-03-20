@@ -15,6 +15,7 @@ describe('menu helper functions', () => {
           { label: 'Show notifications label', key: 'showNotifications' }
         ],
         settings: {
+          updateAutomatically: true,
           currentSiteId: 'jooooooo',
           launchAtStart: true,
           pollInterval: 10000,
