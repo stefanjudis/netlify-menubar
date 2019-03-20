@@ -74,7 +74,11 @@ const onAppReady = async (): Promise<void> => {
   // otherwise the auth prompt disappears in MacOS
   app.dock.hide();
 
-  if (settings.get('updateAutomatically')) {
+  if (
+    settings.get('updateAutomatically') ||
+    // it defaults to true but is not stored initially
+    settings.get('updateAutomatically') === undefined
+  ) {
     autoUpdater.checkForUpdatesAndNotify();
     autoUpdater.on('update-downloaded', () => {
       ui.on('ready-to-update', () => autoUpdater.quitAndInstall());
