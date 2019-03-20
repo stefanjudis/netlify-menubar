@@ -1,4 +1,10 @@
-import { getCheckboxMenu, getDeploysMenu, getSitesMenu } from '../menus';
+import {
+  getCheckboxMenu,
+  getDeploysMenu,
+  getIncidentsMenu,
+  getSitesMenu
+} from '../menus';
+import IncidentFeed from '../incidentFeed';
 
 describe('menu helper functions', () => {
   describe('getCheckboxMenu', () => {
@@ -103,6 +109,25 @@ describe('menu helper functions', () => {
         // tslint:disable-next-line
         onItemClick: id => {}
       });
+
+      expect(result).toMatchSnapshot();
+    });
+  });
+
+  describe('getSitesMenu', () => {
+    test('should render a correct sites menu', () => {
+      const result = getIncidentsMenu(({
+        getFeed: () => [
+          {
+            link: 'https://example.com',
+            title: 'incident 1',
+            pubDate: '2019-11-02',
+            content: ''
+          }
+        ]
+        // // tslint:disable-next-line
+        // onItemClick: id => {}
+      } as unknown) as IncidentFeed);
 
       expect(result).toMatchSnapshot();
     });

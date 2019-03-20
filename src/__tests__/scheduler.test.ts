@@ -18,19 +18,24 @@ describe('scheduler', () => {
         }
       ]);
 
-      await flushPromises();
-
       expect(mFn).toHaveBeenLastCalledWith({ isFirstRun: true });
+      expect(mFn.mock.calls.length).toBe(1);
+
+      await flushPromises();
       jest.advanceTimersByTime(1000);
       expect(mFn).toHaveBeenLastCalledWith({ isFirstRun: false });
-      jest.advanceTimersByTime(1000);
-      expect(mFn).toHaveBeenLastCalledWith({ isFirstRun: false });
+      expect(mFn.mock.calls.length).toBe(2);
+
+      await flushPromises();
+      scheduler.stop();
+      jest.advanceTimersByTime(10000);
+      expect(mFn.mock.calls.length).toBe(2);
+
+      scheduler.resume();
       expect(mFn.mock.calls.length).toBe(3);
 
-      scheduler.stop();
+      await flushPromises();
       jest.advanceTimersByTime(1000);
-      expect(mFn.mock.calls.length).toBe(3);
-      scheduler.resume();
       expect(mFn.mock.calls.length).toBe(4);
     });
   });

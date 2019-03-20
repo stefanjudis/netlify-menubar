@@ -63,3 +63,19 @@ Array [
   },
 ]
 `;
+
+exports[`menu helper functions getSitesMenu should render a correct sites menu 2`] = `
+Array [
+  Object {
+    "click": [Function],
+    "label": "History",
+  },
+  Object {
+    "type": "separator",
+  },
+  Object {
+    "enabled": false,
+    "label": "no recent incidents",
+  },
+]
+`;

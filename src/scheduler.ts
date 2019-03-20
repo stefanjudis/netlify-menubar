@@ -1,11 +1,10 @@
 interface IRun {
   fn: (options: any) => Promise<void>;
   interval: number;
+  timeout?: NodeJS.Timeout | null;
 }
 
-const queue: IRun[] = [];
-const intervals = new Set();
-// TODO enable a visible error log later
+let queue: IRun[] = [];
 const errors: Error[] = [];
 
 const repeat = (fns: IRun[]): void => {
@@ -14,24 +13,36 @@ const repeat = (fns: IRun[]): void => {
     const { fn, interval } = run;
     await fn({ isFirstRun: true });
 
-    const currentId = setInterval(async () => {
-      try {
-        await fn({ isFirstRun: false });
-      } catch (e) {
-        errors.push(e);
-      }
-    }, interval);
-    intervals.add(currentId);
+    const repeatFn = () => {
+      run.timeout = setTimeout(async () => {
+        try {
+          await fn({ isFirstRun: false });
+        } catch (e) {
+          errors.push(e);
+        } finally {
+          repeatFn();
+        }
+      }, interval);
+    };
+
+    repeatFn();
   });
 };
 
 const stop = (): void => {
-  intervals.forEach(id => {
-    clearInterval(id);
+  queue.forEach(run => {
+    if (run.timeout) {
+      clearTimeout(run.timeout);
+      run.timeout = null;
+    }
   });
-  intervals.clear();
 };
-const resume = (): void => repeat(queue);
+
+const resume = (): void => {
+  const tmpQueue = [...queue];
+  queue = [];
+  repeat(tmpQueue);
+};
 
 export default {
   repeat,
