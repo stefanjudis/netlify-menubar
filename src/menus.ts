@@ -30,10 +30,10 @@ export const getIncidentsMenu = (
     .map(incident => {
       return {
         click: () => shell.openExternal(incident.link),
-        label: `${shortenString(incident.title, 60)} | ${distanceInWords(
+        label: `${shortenString(incident.title, 60)} (${distanceInWords(
           new Date(incident.pubDate),
           new Date()
-        )} ago`
+        )} ago)`
       };
     });
   // if there are no recent incidents, replace with message
