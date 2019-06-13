@@ -441,14 +441,6 @@ export default class UI extends EventEmitter {
         label: 'Give feedback'
       },
       { type: 'separator' },
-      ...(this.state.updateAvailable
-        ? [
-            {
-              click: () => this.emit('ready-to-update'),
-              label: 'Restart and update...'
-            }
-          ]
-        : []),
       {
         click: () => {
           settings.deleteAll();
@@ -457,6 +449,14 @@ export default class UI extends EventEmitter {
         label: 'Logout'
       },
       { type: 'separator' },
+      ...(this.state.updateAvailable
+        ? [
+            {
+              click: () => this.emit('ready-to-update'),
+              label: 'Restart and update...'
+            }
+          ]
+        : []),
       { label: 'Quit Netlify Menubar', role: 'quit' }
     ]);
 
