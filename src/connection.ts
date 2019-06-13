@@ -12,6 +12,9 @@ export default class Connection extends EventEmitter {
     this.statusWindow = new BrowserWindow({
       height: 0,
       show: false,
+      webPreferences: {
+        nodeIntegration: true
+      },
       width: 0
     });
     this.statusWindow.loadURL(`data:text/html;charset=utf-8,<!DOCTYPE html>
