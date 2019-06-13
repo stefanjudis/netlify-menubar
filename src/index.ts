@@ -1,5 +1,6 @@
 import AutoLaunch from 'auto-launch';
 import { app, powerMonitor } from 'electron'; // tslint:disable-line no-implicit-dependencies
+import isDev from 'electron-is-dev';
 import settings from 'electron-settings';
 import { autoUpdater } from 'electron-updater';
 import Connection from './connection';
@@ -49,20 +50,23 @@ const onAppReady = async (): Promise<void> => {
   const apiClient = await getNetlifyClient(settings.get(
     'accessToken'
   ) as string);
+
   settings.set('accessToken', apiClient.accessToken);
 
-  const autoLauncher = new AutoLaunch({
-    name: 'Netlify Menubar',
-    path: '/Applications/Netlify Menubar.app'
-  });
+  if (!isDev) {
+    const autoLauncher = new AutoLaunch({
+      name: 'Netlify Menubar',
+      path: '/Applications/Netlify Menubar.app'
+    });
 
-  configureAutoLauncher(autoLauncher, {
-    shouldAutoLaunch: settings.get('launchAtStart')
-  });
+    configureAutoLauncher(autoLauncher, {
+      shouldAutoLaunch: settings.get('launchAtStart')
+    });
 
-  settings.watch('launchAtStart', launchAtStart => {
-    configureAutoLauncher(autoLauncher, { shouldAutoLaunch: launchAtStart });
-  });
+    settings.watch('launchAtStart', launchAtStart => {
+      configureAutoLauncher(autoLauncher, { shouldAutoLaunch: launchAtStart });
+    });
+  }
 
   const ui = new MenuUI({
     apiClient,

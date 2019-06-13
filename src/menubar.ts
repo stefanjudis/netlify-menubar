@@ -449,6 +449,14 @@ export default class UI extends EventEmitter {
             }
           ]
         : []),
+      {
+        click: () => {
+          settings.deleteAll();
+          app.exit();
+        },
+        label: 'Logout'
+      },
+      { type: 'separator' },
       { label: 'Quit Netlify Menubar', role: 'quit' }
     ]);
 
