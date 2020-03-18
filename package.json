@@ -1,6 +1,6 @@
 {
   "name": "netlify-menubar",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "A menubar app to keep track of Netlify builds",
   "author": "stefan judis <stefanjudis@gmail.com>",
   "main": "index.js",
@@ -11,7 +11,7 @@
     "test:ci": "npm run test && codecov",
     "pack": "tsc && electron-builder --dir -m",
     "dist": "tsc && electron-builder -m",
-    "release": "tsc && build",
+    "release": "tsc && electron-builder",
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate"
   },
