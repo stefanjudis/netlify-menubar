@@ -8,7 +8,7 @@ console.log = () => {};
 jest.mock('node-fetch');
 jest.mock('electron', () => ({
   dialog: {
-    showMessageBox: jest.fn((options, cb) => cb(0))
+    showMessageBox: jest.fn(options => Promise.resolve({ response: 0 }))
   },
   shell: {
     openExternal: jest.fn()

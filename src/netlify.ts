@@ -1,10 +1,8 @@
-import { dialog, shell } from 'electron'; // tslint:disable-line no-implicit-dependencies
+import { dialog, MessageBoxReturnValue, shell } from 'electron'; // tslint:disable-line no-implicit-dependencies
 import fetch from 'node-fetch';
 
-const showMessageBox = (options: any): Promise<number> =>
-  new Promise(resolve => {
-    dialog.showMessageBox(options, responseNumber => resolve(responseNumber));
-  });
+const showMessageBox = (options: any): Promise<MessageBoxReturnValue> =>
+  dialog.showMessageBox(options);
 
 interface INetlifyTicket {
   id: string;
@@ -76,7 +74,7 @@ class Netlify {
       }
     }
 
-    const responseId = await showMessageBox({
+    const messageBoxReturn = await showMessageBox({
       buttons: ['Open Netlify', 'Cancel'],
       cancelId: 1,
       defaultId: 0,
@@ -86,7 +84,7 @@ class Netlify {
       type: 'question'
     });
 
-    if (responseId !== 0) {
+    if (messageBoxReturn.response !== 0) {
       return process.exit();
     }
 
