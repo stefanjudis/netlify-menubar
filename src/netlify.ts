@@ -139,7 +139,11 @@ class Netlify {
    * @tested
    */
   public getSiteDeploys(siteId: string): Promise<INetlifyDeploy[]> {
-    return this.fetch<INetlifyDeploy[]>(`/sites/${siteId}/deploys`);
+    // paginate the deploys to not generate too much load on netlify's side
+    // https://github.com/stefanjudis/netlify-menubar/issues/20
+    return this.fetch<INetlifyDeploy[]>(
+      `/sites/${siteId}/deploys?page=1&per_page=15`
+    );
   }
 
   /**

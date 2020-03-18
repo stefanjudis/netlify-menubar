@@ -98,7 +98,7 @@ describe('netlify api client', () => {
       mFetch.mockResolvedValue(getFetchPromise({}));
       await apiClient.getSiteDeploys(siteId);
       expect(mFetch.mock.calls[0][0]).toBe(
-        `${API_URL}/sites/${siteId}/deploys`
+        `${API_URL}/sites/${siteId}/deploys?page=1&per_page=15`
       );
     });
   });
