@@ -9,7 +9,7 @@ import MenuUI from './menubar';
 import Netlify from './netlify';
 
 const OAUTH_CLIENT_ID =
-  '95d3a5f15e46699275056966ec5467073e27cfe13ab1dd29deb5825a483f3d44';
+  '38a923fc70a44fce96c3ad5abd41c732a3c33d3cdb134c0d32c577181671e077';
 
 const getNetlifyClient = async (accessToken: string): Promise<Netlify> => {
   const apiClient = new Netlify(accessToken);
@@ -17,10 +17,10 @@ const getNetlifyClient = async (accessToken: string): Promise<Netlify> => {
 };
 
 const getOnlineConnection = (): Promise<Connection> => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const connection = new Connection();
 
-    connection.on('status-changed', conn => {
+    connection.on('status-changed', (conn) => {
       if (conn.isOnline) {
         resolve(connection);
       }
@@ -47,23 +47,23 @@ const configureAutoLauncher = (
 const onAppReady = async (): Promise<void> => {
   const connection = await getOnlineConnection();
   const incidentFeed = new IncidentFeed();
-  const apiClient = await getNetlifyClient(settings.get(
-    'accessToken'
-  ) as string);
+  const apiClient = await getNetlifyClient(
+    settings.get('accessToken') as string
+  );
 
   settings.set('accessToken', apiClient.accessToken);
 
   if (!isDev) {
     const autoLauncher = new AutoLaunch({
       name: 'Netlify Menubar',
-      path: '/Applications/Netlify Menubar.app'
+      path: '/Applications/Netlify Menubar.app',
     });
 
     configureAutoLauncher(autoLauncher, {
-      shouldAutoLaunch: settings.get('launchAtStart')
+      shouldAutoLaunch: settings.get('launchAtStart'),
     });
 
-    settings.watch('launchAtStart', launchAtStart => {
+    settings.watch('launchAtStart', (launchAtStart) => {
       configureAutoLauncher(autoLauncher, { shouldAutoLaunch: launchAtStart });
     });
   }
@@ -71,7 +71,7 @@ const onAppReady = async (): Promise<void> => {
   const ui = new MenuUI({
     apiClient,
     connection,
-    incidentFeed
+    incidentFeed,
   });
 
   // only hide dock icon when everything's running
